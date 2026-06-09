@@ -1,0 +1,114 @@
+<h1 class="h3 mb-1">Le mie iscrizioni</h1>
+<p class="text-body-secondary mb-3">Corsi a cui sei iscritto. Da qui apri il dettaglio o annulli l'iscrizione.</p>
+
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (data(); as regs) {
+
+  @if (isEmpty()) {
+    <app-empty-state
+      icon="journal-x"
+      message="Non sei iscritto a nessun corso."
+      ctaLabel="Vai al catalogo"
+      (cta)="goCatalog()" />
+  } @else {
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-center">
+          <div class="col-6 col-lg-3">
+            <div class="form-floating">
+              <select id="year" class="form-select" (change)="onYear($event)">
+                <option value="all" [selected]="year() === 'all'">Tutti</option>
+                @for (y of years(); track y) {
+                  <option [value]="y" [selected]="year() === y">{{ y }}/{{ y + 1 }}</option>
+                }
+              </select>
+              <label for="year">Anno accademico</label>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="form-floating">
+              <select id="sem" class="form-select" (change)="onSemester($event)">
+                <option value="all" [selected]="semester() === 'all'">Tutti</option>
+                <option value="1" [selected]="semester() === 1">1</option>
+                <option value="2" [selected]="semester() === 2">2</option>
+              </select>
+              <label for="sem">Semestre</label>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6 text-lg-end">
+            <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset filtri</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (isFilteredEmpty()) {
+      <app-empty-state
+        icon="search"
+        message="Nessuna iscrizione per questi filtri."
+        ctaLabel="Rimuovi filtri"
+        (cta)="clearFilters()" />
+    } @else {
+
+      <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'iscrizione' : 'iscrizioni' }}</p>
+
+      <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+        <div class="row g-2">
+          <div class="col-lg-4">Corso</div>
+          <div class="col-lg-2">Periodo</div>
+          <div class="col-lg-1">CFU</div>
+          <div class="col-lg-3">Appelli</div>
+          <div class="col-lg-2"></div>
+        </div>
+      </div>
+
+      <ul class="list-group">
+        @for (r of filtered(); track r.courseId) {
+          <li class="list-group-item fade" [class.show]="!isRemoving(r)">
+            <div class="row g-2 align-items-center">
+              <div class="col-12 col-lg-4">
+                <a [routerLink]="['/student/courses', r.courseId]" class="fw-semibold text-decoration-none">{{ r.subjectTitle }}</a>
+                @if (isReadonly(r)) { <span class="badge text-bg-light ms-2">Storica</span> }
+                <div class="small text-body-secondary">
+                  <i class="bi bi-person me-1" aria-hidden="true"></i>{{ r.teacherName }}
+                  <span class="badge text-bg-light ms-1">{{ r.degreeTitle }}</span>
+                </div>
+              </div>
+              <div class="col-6 col-lg-2 small">
+                @if (r.semester) { <span>Sem. {{ r.semester }}</span> }
+                @if (r.academicYear; as ay) { <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ ay }}/{{ ay + 1 }}</span> }
+              </div>
+              <div class="col-6 col-lg-1 small">{{ r.cfu }} CFU</div>
+              <div class="col-12 col-lg-3 small">
+                @if (r.futureExams > 0) {
+                  <a [routerLink]="['/student/courses', r.courseId]" class="text-decoration-none">
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ r.futureExams }} {{ r.futureExams === 1 ? 'appello disponibile' : 'appelli disponibili' }}
+                  </a>
+                } @else {
+                  <span class="text-body-secondary"><i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Nessun appello in programma</span>
+                }
+              </div>
+              <div class="col-12 col-lg-2 d-flex gap-2 justify-content-lg-end">
+                <a [routerLink]="['/student/courses', r.courseId]" class="btn btn-sm btn-outline-primary">Apri</a>
+                @if (!isReadonly(r)) {
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askUnregister(r)">Disiscriviti</button>
+                }
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+}
+
+<ion-alert
+  [isOpen]="confirmOpen()"
+  header="Annullare l'iscrizione?"
+  [message]="confirmMessage()"
+  [buttons]="alertButtons"
+  (didDismiss)="confirmOpen.set(false)" />

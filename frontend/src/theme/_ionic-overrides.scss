@@ -1,0 +1,104 @@
+@use 'sass:color';
+@use 'variables' as v;
+
+// Helper: estrae i 3 canali RGB da un colore Sass
+@function rgb-channels($c) {
+  @return #{color.channel($c, 'red', $space: rgb)}, #{color.channel($c, 'green', $space: rgb)}, #{color.channel($c, 'blue', $space: rgb)};
+}
+
+// ================================================================
+// IONIC TOKENS - tema unico light
+// ================================================================
+
+:root {
+  // Primary (azione blu)
+  --ion-color-primary:              #{v.$color-primary};
+  --ion-color-primary-rgb:          #{rgb-channels(v.$color-primary)};
+  --ion-color-primary-contrast:     #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade:        #{color.adjust(v.$color-primary, $lightness: -8%)};
+  --ion-color-primary-tint:         #{color.adjust(v.$color-primary, $lightness: 8%)};
+
+  // Secondary (grigio neutro)
+  --ion-color-secondary:              #{v.$color-secondary};
+  --ion-color-secondary-rgb:          #{rgb-channels(v.$color-secondary)};
+  --ion-color-secondary-contrast:     #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade:        #{color.adjust(v.$color-secondary, $lightness: -8%)};
+  --ion-color-secondary-tint:         #{color.adjust(v.$color-secondary, $lightness: 8%)};
+
+  // Tertiary (= primary blu: niente colore extra fuori palette)
+  --ion-color-tertiary:              #{v.$color-primary};
+  --ion-color-tertiary-rgb:          #{rgb-channels(v.$color-primary)};
+  --ion-color-tertiary-contrast:     #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade:        #{color.adjust(v.$color-primary, $lightness: -8%)};
+  --ion-color-tertiary-tint:         #{color.adjust(v.$color-primary, $lightness: 8%)};
+
+  // Success
+  --ion-color-success:              #{v.$color-success};
+  --ion-color-success-rgb:          #{rgb-channels(v.$color-success)};
+  --ion-color-success-contrast:     #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade:        #{color.adjust(v.$color-success, $lightness: -8%)};
+  --ion-color-success-tint:         #{color.adjust(v.$color-success, $lightness: 8%)};
+
+  // Warning (fill con testo scuro navy)
+  --ion-color-warning:              #{v.$color-warning};
+  --ion-color-warning-rgb:          #{rgb-channels(v.$color-warning)};
+  --ion-color-warning-contrast:     #1F2A3D;
+  --ion-color-warning-contrast-rgb: 31, 42, 61;
+  --ion-color-warning-shade:        #{color.adjust(v.$color-warning, $lightness: -8%)};
+  --ion-color-warning-tint:         #{color.adjust(v.$color-warning, $lightness: 8%)};
+
+  // Danger
+  --ion-color-danger:              #{v.$color-danger};
+  --ion-color-danger-rgb:          #{rgb-channels(v.$color-danger)};
+  --ion-color-danger-contrast:     #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade:        #{color.adjust(v.$color-danger, $lightness: -8%)};
+  --ion-color-danger-tint:         #{color.adjust(v.$color-danger, $lightness: 8%)};
+
+  // Light
+  --ion-color-light:              #{v.$color-light};
+  --ion-color-light-rgb:          #{rgb-channels(v.$color-light)};
+  --ion-color-light-contrast:     #1F2A3D;
+  --ion-color-light-contrast-rgb: 31, 42, 61;
+  --ion-color-light-shade:        #{color.adjust(v.$color-light, $lightness: -6%)};
+  --ion-color-light-tint:         #ffffff;
+
+  // Medium (grigio neutro)
+  --ion-color-medium:              #{v.$color-medium};
+  --ion-color-medium-rgb:          #{rgb-channels(v.$color-medium)};
+  --ion-color-medium-contrast:     #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade:        #{color.adjust(v.$color-medium, $lightness: -6%)};
+  --ion-color-medium-tint:         #{color.adjust(v.$color-medium, $lightness: 8%)};
+
+  // Dark (navy)
+  --ion-color-dark:              #{v.$color-dark};
+  --ion-color-dark-rgb:          #{rgb-channels(v.$color-dark)};
+  --ion-color-dark-contrast:     #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade:        #{color.adjust(v.$color-dark, $lightness: -4%)};
+  --ion-color-dark-tint:         #{color.adjust(v.$color-dark, $lightness: 8%)};
+
+  // Superfici
+  --ion-background-color:          #{v.$body-bg};
+  --ion-background-color-rgb:      #{rgb-channels(v.$body-bg)};
+  --ion-text-color:                #{v.$body-color};
+  --ion-text-color-rgb:            #{rgb-channels(v.$body-color)};
+  --ion-card-background:           #{v.$surface};
+  --ion-item-background:           #{v.$surface};
+  --ion-border-color:              #{v.$border-color};
+
+  // CHROME NAVY: toolbar e tab bar
+  --ion-toolbar-background:        #{v.$color-dark};
+  --ion-toolbar-color:             #ffffff;
+  --ion-tab-bar-background:        #{v.$color-dark};
+  --ion-tab-bar-color:             rgba(255, 255, 255, .7);
+  --ion-tab-bar-color-selected:    #ffffff;
+
+  // Tipografia
+  --ion-font-family: #{v.$font-family-base};
+}

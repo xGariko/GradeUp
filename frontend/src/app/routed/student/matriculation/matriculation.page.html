@@ -1,0 +1,144 @@
+@switch (step()) {
+
+  @case (1) {
+    <h2 class="h4 mb-3">Scegli il corso di laurea</h2>
+
+    <div class="row g-2 mb-4">
+      <div class="col-12 col-sm-4">
+        <div class="form-floating">
+          <select class="form-select" id="fType" (change)="onType($event)">
+            <option value="">Tutti i tipi</option>
+            @for (t of degreeTypes; track t) { <option [value]="t">{{ typeLabels[t] }}</option> }
+          </select>
+          <label for="fType">Tipo</label>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="form-floating">
+          <select class="form-select" id="fDept" (change)="onDept($event)">
+            <option value="">Tutti i dipartimenti</option>
+            @for (d of departments(); track d) { <option [value]="d">{{ d }}</option> }
+          </select>
+          <label for="fDept">Dipartimento</label>
+        </div>
+      </div>
+      <div class="col-12 col-sm-4">
+        <div class="form-floating">
+          <select class="form-select" id="fDur" (change)="onDuration($event)">
+            <option value="">Tutte le durate</option>
+            @for (n of durations(); track n) { <option [value]="n">{{ n }} anni</option> }
+          </select>
+          <label for="fDur">Durata</label>
+        </div>
+      </div>
+    </div>
+
+    @if (degrees().loading) {
+      <p class="text-body-secondary small mb-0">Caricamento...</p>
+    } @else if (degrees().error; as err) {
+      <app-error-state [message]="err" (retry)="loadDegrees()" />
+    } @else if (degrees().data; as all) {
+      @if (!all.length) {
+        <app-empty-state icon="mortarboard" message="Nessun corso di laurea aperto per le immatricolazioni." />
+      } @else if (!filtered().length) {
+        <app-empty-state icon="search" message="Nessun corso corrisponde ai filtri." />
+      } @else {
+        <div class="row g-3">
+          @for (d of filtered(); track d.id) {
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                  <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                    <h3 class="h6 mb-0">{{ d.title }}</h3>
+                    <span class="badge text-bg-light flex-shrink-0">{{ typeLabels[d.type] }}</span>
+                  </div>
+                  <div class="small text-body-secondary mb-2">
+                    <i class="bi bi-building me-1" aria-hidden="true"></i>{{ d.department }}
+                    <span class="ms-2"><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ d.duration }} anni</span>
+                  </div>
+                  @if (d.description) {
+                    <p class="small mb-3">{{ d.description }}</p>
+                  }
+                  <button type="button" class="btn btn-primary mt-auto" (click)="select(d)">Seleziona</button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+
+  @case (2) {
+    @if (selected(); as d) {
+      <div class="mx-auto" style="max-width: 36rem;">
+        <h2 class="h4 mb-2">Conferma immatricolazione</h2>
+        <p class="text-body-secondary">
+          Stai per immatricolarti a <span class="fw-semibold">{{ d.title }}</span>.
+          Una volta confermato, contatta la segreteria per modifiche.
+        </p>
+
+        @if (errorBanner(); as msg) {
+          <div class="alert alert-danger" role="alert">{{ msg }}</div>
+        }
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <dl class="row mb-0 small">
+              <dt class="col-sm-4 fw-normal text-body-secondary">Corso</dt>
+              <dd class="col-sm-8 mb-2">{{ d.title }}</dd>
+              <dt class="col-sm-4 fw-normal text-body-secondary">Tipo</dt>
+              <dd class="col-sm-8 mb-2">{{ typeLabels[d.type] }}</dd>
+              <dt class="col-sm-4 fw-normal text-body-secondary">Dipartimento</dt>
+              <dd class="col-sm-8 mb-2">{{ d.department }}</dd>
+              <dt class="col-sm-4 fw-normal text-body-secondary">Durata</dt>
+              <dd class="col-sm-8 mb-0">{{ d.duration }} anni</dd>
+            </dl>
+          </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="confirm()" novalidate>
+          <div class="form-floating mb-3">
+            <input
+              type="text"
+              id="academicYear"
+              class="form-control"
+              [class.is-invalid]="fieldError('academicYear')"
+              formControlName="academicYear"
+              placeholder="AAAA/AAAA">
+            <label for="academicYear">Anno accademico</label>
+            @if (fieldError('academicYear'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="accept" formControlName="accept">
+            <label class="form-check-label" for="accept">Confermo i dati e procedo</label>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" (click)="back()" [disabled]="submitting()">Indietro</button>
+            <button type="submit" class="btn btn-primary ms-auto" [disabled]="form.invalid || submitting()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              }
+              Conferma immatricolazione
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+  }
+
+  @case (3) {
+    <div class="mx-auto text-center" style="max-width: 36rem;">
+      <i class="bi bi-check-circle text-success-emphasis" style="font-size: 3rem;" aria-hidden="true"></i>
+      <h2 class="h4 mt-3 mb-2">Benvenuto in {{ selected()?.title }}</h2>
+      @if (result()?.matriculation_code != null) {
+        <p class="mb-1">La tua matricola e: <span class="fw-semibold">{{ result()?.matriculation_code }}</span></p>
+      }
+      <p class="text-body-secondary">Stato: {{ statusLabel(result()?.status) }}</p>
+      <a routerLink="/student/home" class="btn btn-primary mt-2">Vai alla home</a>
+    </div>
+  }
+
+}

@@ -1,0 +1,43 @@
+@if (sent()) {
+  <div class="text-center">
+    <i class="bi bi-envelope-check fs-1 text-body-secondary d-inline-block mb-3" aria-hidden="true"></i>
+    <h1 class="h3 mb-2">Controlla la tua email</h1>
+    <p class="text-body-secondary">Se l'indirizzo e' associato a un account, e' stato inviato un link per il reset. Controlla anche la cartella spam.</p>
+    <a routerLink="/auth/login" class="btn btn-primary mt-2">Torna al login</a>
+  </div>
+} @else {
+  <h1 class="h3 mb-1">Recupera password</h1>
+  <p class="text-body-secondary mb-4">Inserisci l'email del tuo account: verra' inviato un link per impostare una nuova password.</p>
+
+  @if (errorBanner(); as msg) {
+    <div class="alert alert-danger" role="alert">{{ msg }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="form-floating mb-3">
+      <input
+        type="email"
+        id="email"
+        class="form-control"
+        [class.is-invalid]="fieldError()"
+        formControlName="email"
+        placeholder="nome@ateneo.it"
+        autocomplete="email"
+        autocapitalize="off"
+        spellcheck="false">
+      <label for="email">Email</label>
+      @if (fieldError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || submitting()">
+      @if (submitting()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      Invia link
+    </button>
+  </form>
+
+  <div class="text-center mt-4">
+    <a routerLink="/auth/login" class="small">Torna al login</a>
+  </div>
+}

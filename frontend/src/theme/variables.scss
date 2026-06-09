@@ -1,0 +1,33 @@
+// ================================================================
+// PALETTE - tema unico light. Source of truth per i token Sass.
+// ================================================================
+
+$color-primary:   #0A58CA;  // blu azione. AA ~5:1 su bianco (testo e fill con testo bianco)
+$color-secondary: #6C757D;  // grigio neutro (.btn-secondary)
+$color-success:   #198754;
+$color-warning:   #FFC107;
+$color-danger:    #DC3545;
+$color-light:     #F8F9FA;
+$color-dark:      #1F2A3D;  // navy: chrome/inchiostro, .bg-dark / .text-bg-dark
+$color-medium:    #6B7585;  // grigio neutro per stati/icone Ionic
+
+$body-bg:        #F8F9FA;   // sfondo app grigio chiaro
+$body-color:     #212529;
+$headings-color: #1F2A3D;   // titoli navy
+$border-color:   #DEE2E6;   // hairline 1px
+$surface:        #FFFFFF;   // card e contenitori
+// Testo secondario: AA su bianco (~5.9:1). Tinta fredda verso il navy.
+$muted:          #5B6473;
+
+// ================================================================
+// TIPOGRAFIA
+// ================================================================
+
+$font-family-base:    'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+$font-family-display: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+
+// ================================================================
+// SHAPE
+// ================================================================
+
+$border-radius: 2px;  // smussatura unica e uniforme (card, bottoni, input, badge)

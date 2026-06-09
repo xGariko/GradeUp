@@ -1,0 +1,195 @@
+<nav aria-label="Percorso" class="mb-3">
+  <a routerLink="/student/courses" class="text-decoration-none small">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Catalogo corsi
+  </a>
+</nav>
+
+@if (notFound()) {
+  <app-empty-state
+    icon="question-circle"
+    message="Corso non trovato o non piu' disponibile."
+    ctaLabel="Torna al catalogo"
+    (cta)="goCatalog()" />
+} @else if (course().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (course().error; as err) {
+  <app-error-state [message]="err" (retry)="loadCourse()" />
+} @else if (data(); as c) {
+
+  <header class="mb-4">
+    <h1 class="h3 mb-1">{{ c.subjectTitle }}</h1>
+    <p class="text-body-secondary mb-2">
+      {{ c.degreeTitle }}
+      @if (c.academicYear; as ay) { <span class="ms-1">- {{ ay }}/{{ ay + 1 }}</span> }
+      @if (c.semester; as s) { <span class="ms-1">- {{ s }}&deg; semestre</span> }
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <span class="badge text-bg-light">{{ c.cfu }} CFU</span>
+      @if (seatsLeft() === null) {
+        <span class="badge text-bg-light"><i class="bi bi-infinity me-1" aria-hidden="true"></i>Posti liberi</span>
+      } @else if (!full()) {
+        <span class="badge text-bg-light">{{ c.enrolled }}/{{ c.capacity }} iscritti</span>
+      } @else {
+        <span class="badge text-bg-secondary">Posti esauriti</span>
+      }
+      @if (registered()) { <span class="badge text-bg-success">Iscritto al corso</span> }
+      @if (c.inMyPlan) { <span class="badge text-bg-light">Nel mio piano</span> }
+    </div>
+  </header>
+
+  <div class="card mb-3">
+    <div class="card-header bg-transparent"><h2 class="h6 mb-0">Informazioni corso</h2></div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3 fw-semibold">Docente</dt>
+        <dd class="col-sm-9"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ c.teacherName }}</dd>
+
+        <dt class="col-sm-3 fw-semibold">Periodo</dt>
+        <dd class="col-sm-9">
+          @if (c.startDate || c.endDate) {
+            <span>{{ c.startDate | date:'dd/MM/yyyy' }} - {{ c.endDate | date:'dd/MM/yyyy' }}</span>
+          } @else {
+            <span class="text-body-secondary">Date non disponibili</span>
+          }
+        </dd>
+
+        <dt class="col-sm-3 fw-semibold">Descrizione</dt>
+        <dd class="col-sm-9 mb-0">
+          @if (c.subjectDescription) { {{ c.subjectDescription }} }
+          @else { <span class="text-body-secondary">Nessuna descrizione disponibile.</span> }
+        </dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header bg-transparent"><h2 class="h6 mb-0">Iscrizione</h2></div>
+    <div class="card-body">
+      @if (registered()) {
+        <p class="mb-3">Sei iscritto a questo corso.</p>
+        <button type="button" class="btn btn-outline-secondary" (click)="askUnregister()" [disabled]="submitting()">
+          @if (submitting()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+          Disiscriviti
+        </button>
+      } @else if (isPending()) {
+        <div class="alert alert-warning mb-0" role="status">
+          La tua immatricolazione e' in attesa di conferma: potrai iscriverti quando sara' attiva.
+        </div>
+      } @else if (notMatriculated()) {
+        <div class="alert alert-info" role="status">
+          Non risulti immatricolato al corso di laurea di questo insegnamento.
+        </div>
+        <button type="button" class="btn btn-primary" (click)="goMatriculation()">Vai all'immatricolazione</button>
+      } @else if (!isActive()) {
+        <div class="alert alert-secondary mb-0" role="status">
+          La tua immatricolazione non e' attiva: iscrizione non disponibile.
+        </div>
+      } @else if (full()) {
+        <button type="button" class="btn btn-primary" disabled>Posti esauriti</button>
+        <p class="text-body-secondary small mt-2 mb-0">Tutti i posti del corso sono occupati.</p>
+      } @else {
+        <button type="button" class="btn btn-primary" (click)="register()" [disabled]="submitting()">
+          @if (submitting()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+          Iscriviti a questo corso
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (registered()) {
+    <div class="card mb-3">
+      <div class="card-header bg-transparent"><h2 class="h6 mb-0">Materiale didattico</h2></div>
+      <div class="card-body" [class.p-0]="(materials().data?.length ?? 0) > 0">
+        @if (materials().loading) {
+          <p class="text-body-secondary small mb-0">Caricamento...</p>
+        } @else if (materials().error; as merr) {
+          <app-error-state [message]="merr" (retry)="loadMaterials()" />
+        } @else if (materials().data; as files) {
+          @if (!files.length) {
+            <app-empty-state icon="folder2-open" message="Il docente non ha ancora caricato materiale." />
+          } @else {
+            <ul class="list-group list-group-flush">
+              @for (f of files; track f.id) {
+                <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                  <div>
+                    <div class="fw-semibold">{{ f.title || f.fileName }}</div>
+                    <div class="small text-body-secondary">
+                      @if (f.mimeType) { <span>{{ f.mimeType }}</span> }
+                      @if (f.uploadedAt) { <span class="ms-2">{{ f.uploadedAt | date:'dd/MM/yyyy' }}</span> }
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                          title="Download non ancora disponibile">
+                    <i class="bi bi-download me-1" aria-hidden="true"></i>Scarica
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <div class="card mb-3">
+    <div class="card-header bg-transparent"><h2 class="h6 mb-0">Appelli in programma</h2></div>
+    <div class="card-body" [class.p-0]="(exams().data?.length ?? 0) > 0">
+      @if (exams().loading) {
+        <p class="text-body-secondary small mb-0">Caricamento...</p>
+      } @else if (exams().error; as eerr) {
+        <app-error-state [message]="eerr" (retry)="loadExams()" />
+      } @else if (exams().data; as list) {
+        @if (!list.length) {
+          <app-empty-state icon="calendar-x" message="Nessun appello in programma per il momento." />
+        } @else {
+
+          <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+            <div class="row g-2">
+              <div class="col-lg-4">Data</div>
+              <div class="col-lg-4">Sede</div>
+              <div class="col-lg-2">Docente</div>
+              <div class="col-lg-2"></div>
+            </div>
+          </div>
+
+          <ul class="list-group list-group-flush">
+            @for (ex of list; track ex.id) {
+              <li class="list-group-item">
+                <div class="row g-2 align-items-center">
+                  <div class="col-12 col-lg-4 fw-semibold">
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ ex.examDate | date:'dd/MM/yyyy HH:mm' }}
+                  </div>
+                  <div class="col-6 col-lg-4 small">
+                    @if (ex.location) { {{ ex.location }} } @else { <span class="text-body-secondary">Sede da definire</span> }
+                  </div>
+                  <div class="col-6 col-lg-2 small text-body-secondary">{{ ex.teacherName }}</div>
+                  <div class="col-12 col-lg-2 text-lg-end">
+                    @if (ex.myStatus === 'scheduled') {
+                      <span class="badge text-bg-success"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Prenotato</span>
+                    } @else if (registered()) {
+                      <button type="button" class="btn btn-sm btn-outline-primary"
+                              (click)="book(ex)" [disabled]="bookingId() !== null">
+                        @if (bookingId() === ex.id) { <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> }
+                        Prenota
+                      </button>
+                    } @else {
+                      <span class="small text-body-secondary">Iscriviti per prenotare</span>
+                    }
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </div>
+  </div>
+
+  <ion-alert
+    [isOpen]="confirmOpen()"
+    header="Disiscriviti dal corso"
+    message="Perderai l'accesso al materiale e le prenotazioni agli appelli ancora in programma di questo corso."
+    [buttons]="alertButtons"
+    (didDismiss)="confirmOpen.set(false)">
+  </ion-alert>
+}

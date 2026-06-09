@@ -6,6 +6,9 @@
 /e2e/test-output/
 /.angular/
 .angular/
+.idea/
+dist/
+node_modules/
 
 # Node modules and dependency files
 /node_modules/
@@ -13,7 +16,8 @@
 /yarn.lock
 
 # Environment files
-/.env
+.env
+*.env.local
 
 # Angular CLI and build artefacts
 /.angular-cli.json

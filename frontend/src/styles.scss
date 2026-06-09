@@ -1,0 +1,64 @@
+@use 'theme/variables' as v;
+@use 'theme/ionic-overrides';
+
+// Bootstrap con override centralizzati - tema unico light
+@use 'bootstrap/scss/bootstrap' with (
+  $primary:               v.$color-primary,
+  $secondary:             v.$color-secondary,
+  $success:               v.$color-success,
+  $warning:               v.$color-warning,
+  $danger:                v.$color-danger,
+  $light:                 v.$color-light,
+  $dark:                  v.$color-dark,
+  $body-bg:               v.$body-bg,
+  $body-color:            v.$body-color,
+  $headings-color:        v.$headings-color,
+  $border-color:          v.$border-color,
+  $font-family-base:      v.$font-family-base,
+  $headings-font-family:  v.$font-family-base,    // h1-h6 = Plex Sans
+  $display-font-family:   v.$font-family-display, // .display-* = Plex Serif
+  $headings-font-weight:  600,
+  $display-font-weight:   600,
+  $border-radius:         v.$border-radius,
+  $border-radius-sm:      v.$border-radius,
+  $border-radius-lg:      v.$border-radius,
+  $border-radius-xl:      v.$border-radius,
+  $border-radius-xxl:     v.$border-radius,
+  $box-shadow:            0 .5rem 1.25rem rgba(31, 42, 61, .18),
+  $spacers: (
+    0: 0,
+    1: .25rem,
+    2: .5rem,
+    3: .75rem,
+    4: 1rem,
+    5: 1.5rem,
+    6: 2rem,
+    7: 3rem,
+  ),
+);
+
+// Ionic CSS core
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/flex-utils.css';
+@import '@ionic/angular/css/text-alignment.css';
+
+// Iconografia: Bootstrap Icons (set unico, anche dentro componenti Ionic via icona custom)
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// Testo secondario leggibile: .text-body-secondary / .text-muted leggono --bs-secondary-color (AA su bianco).
+:root {
+  --bs-secondary-color:     #{v.$muted};
+  --bs-secondary-color-rgb: 91, 100, 115;
+}
+
+// Fix overlap tab bar su mobile
+@media (max-width: 991px) {
+  ion-content {
+    --padding-bottom: 64px;
+  }
+}

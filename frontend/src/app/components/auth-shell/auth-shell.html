@@ -1,0 +1,113 @@
+<ion-content class="flex-grow-1" style="min-height: 0;">
+
+  <div class="d-flex flex-column" style="min-height: 100%;">
+
+    <header class="sticky-top bg-dark text-white d-flex align-items-center gap-3 px-3 px-lg-4 py-2">
+      <img src="/assets/logo.svg" alt="GradeUp" height="26" class="d-none d-lg-block">
+      <h1 class="h5 fw-semibold mb-0 text-truncate me-auto text-white">{{ pageTitle() }}</h1>
+
+      @if (config().notificationsRoute; as notif) {
+        <a [routerLink]="notif" class="btn btn-link text-white p-2 lh-1" aria-label="Notifiche">
+          <i class="bi bi-bell fs-5" aria-hidden="true"></i>
+        </a>
+      }
+
+      <div class="dropdown">
+        <button
+          type="button"
+          class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-2 p-1"
+          (click)="toggleMenu($event)"
+          [attr.aria-expanded]="menuOpen()"
+          aria-haspopup="menu">
+          <span
+            class="d-inline-flex align-items-center justify-content-center bg-light text-dark rounded-circle fw-semibold"
+            style="width: 2rem; height: 2rem; font-size: .8rem;"
+            aria-hidden="true">{{ initials() }}</span>
+          <span class="d-none d-lg-inline">{{ fullName() }}</span>
+          <i class="bi bi-chevron-down small" aria-hidden="true"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end mt-1" [class.show]="menuOpen()" role="menu">
+          <li role="none">
+            <a class="dropdown-item" role="menuitem" [routerLink]="config().profileRoute">
+              <i class="bi bi-person me-2" aria-hidden="true"></i>Profilo
+            </a>
+          </li>
+          <li role="none"><hr class="dropdown-divider"></li>
+          <li role="none">
+            <button type="button" class="dropdown-item" role="menuitem" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Esci
+            </button>
+          </li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="row g-0 flex-grow-1">
+
+      <nav
+        class="col-auto d-none d-lg-flex flex-column bg-dark text-white p-3 gap-1"
+        style="width: 16rem;"
+        aria-label="Navigazione principale">
+        @for (item of config().menu; track item.label) {
+          @if (item.route) {
+            <a
+              class="nav-link d-flex align-items-center gap-2 rounded px-3 py-2 text-white"
+              routerLinkActive="bg-primary"
+              [routerLink]="item.route">
+              <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>{{ item.label }}
+            </a>
+          } @else {
+            <div class="d-flex align-items-center gap-2 px-3 pt-3 pb-1 text-uppercase small fw-semibold text-white opacity-75">
+              <i class="bi bi-{{ item.icon }}" aria-hidden="true"></i>{{ item.label }}
+            </div>
+            @for (child of item.children; track child.route) {
+              <a
+                class="nav-link rounded ps-5 pe-3 py-2 text-white"
+                routerLinkActive="bg-primary"
+                [routerLink]="child.route">{{ child.label }}</a>
+            }
+          }
+        }
+      </nav>
+
+      <main class="col bg-body-tertiary">
+        <div class="container-xxl px-3 px-lg-4 py-4">
+          <ng-content />
+        </div>
+      </main>
+
+    </div>
+
+  </div>
+
+  <nav
+    class="fixed-bottom d-flex d-lg-none bg-dark border-top border-secondary"
+    aria-label="Navigazione principale">
+    @for (tab of config().tabs; track tab.label) {
+      @if (tab.route) {
+        <a
+          class="nav-link flex-fill text-center py-2 text-white opacity-75"
+          routerLinkActive="opacity-100 fw-semibold"
+          [routerLink]="tab.route">
+          <i class="bi bi-{{ tab.icon }} d-block fs-5" aria-hidden="true"></i>
+          <span class="small">{{ tab.label }}</span>
+        </a>
+      } @else {
+        <button
+          type="button"
+          class="btn nav-link flex-fill text-center py-2 text-white opacity-75"
+          (click)="openGroup(tab)">
+          <i class="bi bi-{{ tab.icon }} d-block fs-5" aria-hidden="true"></i>
+          <span class="small">{{ tab.label }}</span>
+        </button>
+      }
+    }
+  </nav>
+
+</ion-content>
+
+<ion-action-sheet
+  [isOpen]="sheetOpen()"
+  [header]="sheetHeader()"
+  [buttons]="sheetButtons()"
+  (didDismiss)="sheetOpen.set(false)" />

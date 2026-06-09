@@ -1,0 +1,63 @@
+<h1 class="h3 mb-4">Accedi</h1>
+
+@if (errorBanner(); as msg) {
+  <div class="alert alert-danger" role="alert">{{ msg }}</div>
+}
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="form-floating mb-3">
+    <input
+      type="email"
+      id="email"
+      class="form-control"
+      [class.is-invalid]="fieldError('email')"
+      formControlName="email"
+      placeholder="nome@ateneo.it"
+      autocomplete="email"
+      autocapitalize="off"
+      spellcheck="false">
+    <label for="email">Email</label>
+    @if (fieldError('email'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
+  </div>
+
+  <div class="input-group">
+    <div class="form-floating">
+      <input
+        [type]="showPassword() ? 'text' : 'password'"
+        id="password"
+        class="form-control"
+        [class.is-invalid]="fieldError('password')"
+        formControlName="password"
+        placeholder="Password"
+        autocomplete="current-password">
+      <label for="password">Password</label>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="togglePassword()"
+      [attr.aria-label]="showPassword() ? 'Nascondi password' : 'Mostra password'"
+      [attr.aria-pressed]="showPassword()">
+      <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()" aria-hidden="true"></i>
+    </button>
+    @if (fieldError('password'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="form.invalid || submitting()">
+    @if (submitting()) {
+      <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+    }
+    Accedi
+  </button>
+</form>
+
+<div class="d-flex flex-column align-items-center gap-2 mt-4">
+  <a routerLink="/auth/forgot" class="small">Password dimenticata?</a>
+  <span class="small text-body-secondary">
+    Non hai un account? <a routerLink="/auth/register">Registrati</a>
+  </span>
+</div>

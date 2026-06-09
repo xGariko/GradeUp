@@ -1,0 +1,205 @@
+<!-- Stato carriera -->
+<section aria-label="Stato carriera" class="mb-4">
+  @if (career().loading) {
+    <p class="text-body-secondary small mb-0">Caricamento...</p>
+  } @else if (career().error; as err) {
+    <app-error-state [message]="err" (retry)="loadCareer()" />
+  } @else if (careerBanner(); as bannerInfo) {
+    <div class="card {{ bannerInfo.cardClass }}">
+      <div class="card-body d-flex align-items-start gap-3">
+        <i class="bi bi-{{ bannerInfo.icon }} fs-2 lh-1 {{ bannerInfo.iconClass }}" aria-hidden="true"></i>
+        <div class="flex-grow-1">
+          <h2 class="h5 mb-1">{{ bannerInfo.title }}</h2>
+          @if (bannerInfo.message) {
+            <p class="mb-0 text-body-secondary">{{ bannerInfo.message }}</p>
+          }
+          @if (bannerInfo.details; as d) {
+            <div class="row g-2 mt-1 small">
+              @if (d.degreeTitle) {
+                <div class="col-12">
+                  <span class="fw-semibold">{{ d.degreeTitle }}</span>
+                  @if (d.degreeType) { <span class="text-body-secondary"> - {{ d.degreeType }}</span> }
+                </div>
+              }
+              @if (d.academicYear) {
+                <div class="col-sm-6"><span class="text-body-secondary">Anno accademico:</span> {{ d.academicYear }}</div>
+              }
+              @if (d.matriculationCode) {
+                <div class="col-sm-6"><span class="text-body-secondary">Matricola:</span> {{ d.matriculationCode }}</div>
+              }
+            </div>
+          }
+          @if (bannerInfo.cta; as cta) {
+            <a [routerLink]="cta.link" class="btn btn-primary mt-3">{{ cta.label }}</a>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>
+
+<div class="row g-4">
+
+  <!-- Progresso CFU -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Progresso CFU</h2>
+        <a routerLink="/student/transcript" class="small text-decoration-none">Libretto</a>
+      </div>
+      <div class="card-body">
+        @if (cfu().loading) {
+          <p class="text-body-secondary small mb-0">Caricamento...</p>
+        } @else if (cfu().error; as err) {
+          <app-error-state [message]="err" (retry)="loadCfu()" />
+        } @else if (cfu().data; as cfu) {
+          <div class="d-flex align-items-baseline gap-2">
+            <span class="display-5 lh-1">{{ cfu.acquired }}</span>
+            <span class="text-body-secondary">/ {{ cfu.total }} CFU</span>
+          </div>
+          <div
+            class="progress mt-3"
+            role="progressbar"
+            aria-label="Progresso CFU"
+            [attr.aria-valuenow]="cfuPercent()"
+            aria-valuemin="0"
+            aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="cfuPercent()"></div>
+          </div>
+          <p class="mb-0 mt-3">
+            <span class="text-body-secondary">Media:</span>
+            <span class="fw-semibold ms-1">{{ cfu.average != null ? (cfu.average | number:'1.1-2') : '-' }}</span>
+          </p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Prossimi appelli -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Prossimi appelli</h2>
+        <a routerLink="/student/enrollments" class="small text-decoration-none">Vedi tutte</a>
+      </div>
+      <div class="card-body p-0">
+        @if (exams().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (exams().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadExams()" /></div>
+        } @else if (exams().data; as examData) {
+          @if (examData.length) {
+            <ul class="list-group list-group-flush">
+              @for (exam of examData.slice(0, 3); track exam.enrollmentId) {
+                <li class="list-group-item">
+                  <div class="fw-semibold">{{ exam.courseTitle }}</div>
+                  <div class="small text-body-secondary">
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ exam.examDate | date:'dd/MM/yyyy HH:mm' }}
+                    @if (exam.location) {
+                      <span class="ms-2"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ exam.location }}</span>
+                    }
+                  </div>
+                  <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ exam.teacherName }}</div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state
+              icon="calendar-x"
+              message="Nessun appello in programma."
+              ctaLabel="Vedi appelli disponibili"
+              (cta)="nav('/student/exams')" />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Corsi del semestre -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Corsi del semestre</h2>
+        <a routerLink="/student/registrations" class="small text-decoration-none">Vedi tutte</a>
+      </div>
+      <div class="card-body p-0">
+        @if (courses().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (courses().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadCourses()" /></div>
+        } @else if (courses().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (course of list.slice(0, 5); track course.registrationId) {
+                <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                  <div>
+                    <div class="fw-semibold">{{ course.title }}</div>
+                    <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ course.teacherName }}</div>
+                  </div>
+                  <span class="badge text-bg-light flex-shrink-0">{{ course.cfu }} CFU</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state
+              icon="journal-x"
+              message="Non sei iscritto a corsi."
+              ctaLabel="Sfoglia il catalogo"
+              (cta)="nav('/student/courses')" />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Ultime notifiche -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Ultime notifiche</h2>
+        <a routerLink="/student/notifications" class="small text-decoration-none">Vedi tutte</a>
+      </div>
+      <div class="card-body p-0">
+        @if (notifs().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (notifs().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadNotifs()" /></div>
+        } @else if (notifs().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (n of list.slice(0, 3); track n.id) {
+                <li class="list-group-item d-flex gap-2">
+                  <i class="bi bi-{{ severityIcon(n.severity) }} {{ severityClass(n.severity) }} mt-1" aria-hidden="true"></i>
+                  <div class="flex-grow-1">
+                    <div class="fw-semibold">{{ n.title }}</div>
+                    <div class="small text-body-secondary">{{ n.body }}</div>
+                    <div class="small text-body-secondary">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state icon="bell-slash" message="Nessuna notifica." />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Azioni rapide -->
+<section aria-label="Azioni rapide" class="mt-4">
+  <h2 class="h6 mb-3">Azioni rapide</h2>
+  <div class="d-flex flex-wrap gap-2">
+    <a routerLink="/student/courses" class="btn btn-outline-primary">
+      <i class="bi bi-collection me-2" aria-hidden="true"></i>Catalogo corsi
+    </a>
+    <a routerLink="/student/exams" class="btn btn-outline-primary">
+      <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Appelli disponibili
+    </a>
+    <a routerLink="/student/transcript" class="btn btn-outline-primary">
+      <i class="bi bi-journal-text me-2" aria-hidden="true"></i>Libretto
+    </a>
+  </div>
+</section>

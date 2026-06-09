@@ -1,0 +1,56 @@
+@if (tokenInvalid()) {
+  <div class="text-center">
+    <i class="bi bi-link-45deg fs-1 text-body-secondary d-inline-block mb-3" aria-hidden="true"></i>
+    <h1 class="h3 mb-2">Link non valido</h1>
+    <p class="text-body-secondary">Il link per il reset non e' valido o e' scaduto.</p>
+    <a routerLink="/auth/forgot" class="btn btn-primary mt-2">Richiedi un nuovo link</a>
+  </div>
+} @else if (done()) {
+  <div class="text-center">
+    <i class="bi bi-check-circle fs-1 text-success d-inline-block mb-3" aria-hidden="true"></i>
+    <h1 class="h3 mb-2">Password aggiornata</h1>
+    <p class="text-body-secondary">Ora puoi accedere con la nuova password.</p>
+    <a routerLink="/auth/login" class="btn btn-primary mt-2">Vai al login</a>
+  </div>
+} @else {
+  <h1 class="h3 mb-4">Imposta nuova password</h1>
+
+  @if (errorBanner(); as msg) {
+    <div class="alert alert-danger" role="alert">{{ msg }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="form-floating mb-3">
+      <input
+        type="password"
+        id="password"
+        class="form-control"
+        [class.is-invalid]="fieldError('password')"
+        formControlName="password"
+        placeholder="Nuova password"
+        autocomplete="new-password">
+      <label for="password">Nuova password</label>
+      @if (fieldError('password'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    </div>
+
+    <div class="form-floating mb-3">
+      <input
+        type="password"
+        id="confirmPassword"
+        class="form-control"
+        [class.is-invalid]="confirmError()"
+        formControlName="confirmPassword"
+        placeholder="Conferma password"
+        autocomplete="new-password">
+      <label for="confirmPassword">Conferma password</label>
+      @if (confirmError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || submitting()">
+      @if (submitting()) {
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+      }
+      Salva nuova password
+    </button>
+  </form>
+}
