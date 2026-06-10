@@ -1,0 +1,55 @@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <h1 class="h4 mb-0">Da verbalizzare</h1>
+</div>
+
+@if (exams().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (exams().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (exams().data; as list) {
+  @if (!list.length) {
+    <app-empty-state
+      icon="check2-circle"
+      message="Nessun esame da verbalizzare. Sei in pari." />
+  } @else {
+
+    <p class="text-body-secondary small mb-2">
+      {{ list.length }} {{ list.length === 1 ? 'appello in attesa' : 'appelli in attesa' }} di verbalizzazione
+    </p>
+
+    <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+      <div class="row g-2">
+        <div class="col-lg-3">Data</div>
+        <div class="col-lg-5">Corso</div>
+        <div class="col-lg-2">Pendenti</div>
+        <div class="col-lg-2"></div>
+      </div>
+    </div>
+
+    <ul class="list-group">
+      @for (e of list; track e.examId) {
+        <li class="list-group-item">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-lg-3">
+              <span class="fw-semibold">
+                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ e.examDate | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="text-body-secondary ms-1">{{ e.examDate | date:'HH:mm' }}</span>
+            </div>
+            <div class="col-12 col-lg-5">
+              <span class="fw-semibold">{{ e.courseTitle }}</span>
+            </div>
+            <div class="col-6 col-lg-2">
+              <span class="badge text-bg-warning">{{ e.pendingCount }} da verbalizzare</span>
+            </div>
+            <div class="col-6 col-lg-2 text-lg-end">
+              <a [routerLink]="['/teacher/exams', e.examId, 'grade']" class="btn btn-sm btn-warning">
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Verbalizza
+              </a>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

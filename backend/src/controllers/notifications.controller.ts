@@ -21,3 +21,29 @@ export async function listMine(req: Request, res: Response): Promise<void> {
 
     res.json(result.rows);
 }
+
+export async function markRead(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) throw new AppError(400, 'Id non valido');
+
+    const result = await db.query(
+        'UPDATE notification SET is_read = true WHERE id = $1 AND id_user = $2',
+        [id, req.user.sub],
+    );
+    if (result.rowCount === 0) throw new AppError(404, 'Notifica non trovata');
+
+    res.json({ ok: true });
+}
+
+export async function markAllRead(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+
+    const result = await db.query(
+        'UPDATE notification SET is_read = true WHERE id_user = $1 AND is_read = false',
+        [req.user.sub],
+    );
+
+    res.json({ ok: true, updated: result.rowCount ?? 0 });
+}

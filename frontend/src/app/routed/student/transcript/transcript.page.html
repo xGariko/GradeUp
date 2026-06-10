@@ -1,0 +1,168 @@
+<h1 class="h3 mb-1">Libretto</h1>
+
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (data(); as t) {
+
+  @if (notMatriculated()) {
+    <app-empty-state
+      icon="mortarboard"
+      message="Per consultare il libretto devi prima immatricolarti."
+      ctaLabel="Immatricolati ora"
+      (cta)="goMatriculation()" />
+  } @else {
+
+    <p class="text-body-secondary mb-3">
+      {{ t.studentName }}
+      @if (t.matriculationCode) { <span class="ms-1">- matricola {{ t.matriculationCode }}</span> }
+      @if (t.degreeTitle) { <span class="d-block">{{ t.degreeTitle }}</span> }
+    </p>
+
+    @if (isGraduated()) {
+      <div class="alert alert-success" role="status">
+        <i class="bi bi-mortarboard-fill me-2" aria-hidden="true"></i>
+        Hai completato il tuo percorso. Totale CFU: {{ t.cfuAcquired }}.
+        @if (t.averageWeighted != null) { Media finale: {{ t.averageWeighted | number:'1.2-2' }}. }
+      </div>
+    }
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-12 col-md-5">
+            <span class="display-5">{{ t.cfuAcquired }}</span>
+            <span class="text-body-secondary"> / {{ t.cfuTotal }} CFU acquisiti</span>
+            <div class="progress mt-2" role="progressbar" aria-label="CFU acquisiti"
+                 [attr.aria-valuenow]="t.cfuAcquired" aria-valuemin="0" [attr.aria-valuemax]="t.cfuTotal">
+              <div class="progress-bar" [style.width.%]="cfuPercent()"></div>
+            </div>
+            <p class="small text-body-secondary mt-1 mb-0">{{ cfuPercent() }}% del piano completato</p>
+          </div>
+          <div class="col-6 col-md-3 col-lg-3 border-start">
+            <p class="small text-body-secondary mb-0">Media aritmetica</p>
+            @if (t.averageArithmetic != null) {
+              <span class="display-6">{{ t.averageArithmetic | number:'1.1-1' }}</span>
+            } @else {
+              <span class="fs-4 text-body-secondary">-</span>
+            }
+          </div>
+          <div class="col-6 col-md-4 col-lg-4 border-start">
+            <p class="small text-body-secondary mb-0">Media ponderata</p>
+            @if (t.averageWeighted != null) {
+              <span class="display-6">{{ t.averageWeighted | number:'1.2-2' }}</span>
+            } @else {
+              <span class="fs-4 text-body-secondary">-</span>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (isEmpty()) {
+      <app-empty-state
+        icon="journal-text"
+        message="Non hai ancora sostenuto esami."
+        ctaLabel="Vai agli appelli disponibili"
+        (cta)="goExams()" />
+    } @else {
+
+      <div class="row g-2 align-items-end mb-3">
+        <div class="col-6 col-lg-3">
+          <div class="form-floating">
+            <select id="year" class="form-select" (change)="onYear($event)">
+              <option value="all" [selected]="yearFilter() === 'all'">Tutti</option>
+              @for (y of years(); track y) {
+                <option [value]="y" [selected]="yearFilter() === y">{{ y }}/{{ y + 1 }}</option>
+              }
+            </select>
+            <label for="year">Anno accademico</label>
+          </div>
+        </div>
+        @if (subjects().length > 1) {
+          <div class="col-6 col-lg-4">
+            <div class="form-floating">
+              <select id="subject" class="form-select" (change)="onSubject($event)">
+                <option value="all" [selected]="subjectFilter() === 'all'">Tutte</option>
+                @for (s of subjects(); track s) {
+                  <option [value]="s" [selected]="subjectFilter() === s">{{ s }}</option>
+                }
+              </select>
+              <label for="subject">Materia</label>
+            </div>
+          </div>
+        }
+        <div class="col-12 col-lg-auto ms-lg-auto">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Ordina esami">
+            <button type="button" class="btn btn-outline-secondary" [class.active]="sortKey() === 'date'"
+                    [attr.aria-pressed]="sortKey() === 'date'" (click)="setSort('date')">
+              Data
+              @if (sortKey() === 'date') {
+                <i class="bi" [class.bi-caret-up-fill]="sortDir() === 'asc'" [class.bi-caret-down-fill]="sortDir() === 'desc'" aria-hidden="true"></i>
+              }
+            </button>
+            <button type="button" class="btn btn-outline-secondary" [class.active]="sortKey() === 'grade'"
+                    [attr.aria-pressed]="sortKey() === 'grade'" (click)="setSort('grade')">
+              Voto
+              @if (sortKey() === 'grade') {
+                <i class="bi" [class.bi-caret-up-fill]="sortDir() === 'asc'" [class.bi-caret-down-fill]="sortDir() === 'desc'" aria-hidden="true"></i>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (filteredEmpty()) {
+        <app-empty-state
+          icon="search"
+          message="Nessun esame per i filtri selezionati."
+          ctaLabel="Rimuovi filtri"
+          (cta)="clearFilters()" />
+      } @else {
+
+        <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'esame' : 'esami' }}</p>
+
+        <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+          <div class="row g-2">
+            <div class="col-lg-2" [attr.aria-sort]="ariaSort('date')">Data</div>
+            <div class="col-lg-3">Materia</div>
+            <div class="col-lg-1">CFU</div>
+            <div class="col-lg-2" [attr.aria-sort]="ariaSort('grade')">Voto</div>
+            <div class="col-lg-2">Docente</div>
+            <div class="col-lg-2">Anno</div>
+          </div>
+        </div>
+
+        <ul class="list-group">
+          @for (it of filtered(); track it.enrollmentId) {
+            <li class="list-group-item">
+              <div class="row g-2 align-items-center">
+                <div class="col-6 col-lg-2 small">
+                  <i class="bi bi-calendar-event me-1 d-lg-none" aria-hidden="true"></i>{{ it.examDate | date:'dd/MM/yyyy' }}
+                </div>
+                <div class="col-12 col-lg-3 order-lg-0">
+                  <a [routerLink]="['/student/courses', it.courseId]" class="fw-semibold text-decoration-none">{{ it.subjectTitle }}</a>
+                </div>
+                <div class="col-6 col-lg-1 small">{{ it.cfu }} CFU</div>
+                <div class="col-6 col-lg-2">
+                  @if (it.grade != null) {
+                    <span class="fs-5 fw-semibold" [class.text-success-emphasis]="it.grade === 30">{{ it.grade }}/30</span>
+                  } @else {
+                    <span class="text-body-secondary">-</span>
+                  }
+                </div>
+                <div class="col-6 col-lg-2 small text-body-secondary">
+                  <i class="bi bi-person me-1 d-lg-none" aria-hidden="true"></i>{{ it.teacherName }}
+                </div>
+                <div class="col-6 col-lg-2 small text-body-secondary">
+                  @if (it.academicYear != null) { {{ it.academicYear }}/{{ it.academicYear + 1 }} } @else { - }
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+}

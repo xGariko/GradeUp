@@ -1,0 +1,142 @@
+<h1 class="h3 mb-1">Le mie prenotazioni</h1>
+<p class="text-body-secondary mb-3">Gli appelli che hai prenotato e lo storico dei tuoi esami.</p>
+
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (data()) {
+
+  @if (isEmpty()) {
+    <app-empty-state
+      icon="calendar-x"
+      message="Non hai ancora prenotato appelli."
+      ctaLabel="Vai agli appelli disponibili"
+      (cta)="goExams()" />
+  } @else {
+
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-12 col-lg-auto">
+        <div class="btn-group" role="group" aria-label="Vista prenotazioni">
+          <button type="button" class="btn btn-outline-secondary" [class.active]="tab() === 'upcoming'"
+                  [attr.aria-pressed]="tab() === 'upcoming'" (click)="setTab('upcoming')">
+            In arrivo ({{ upcoming().length }})
+          </button>
+          <button type="button" class="btn btn-outline-secondary" [class.active]="tab() === 'history'"
+                  [attr.aria-pressed]="tab() === 'history'" (click)="setTab('history')">
+            Storico ({{ history().length }})
+          </button>
+        </div>
+      </div>
+      @if (subjects().length > 1) {
+        <div class="col-12 col-lg-4 ms-lg-auto">
+          <div class="form-floating">
+            <select id="subject" class="form-select" (change)="onSubject($event)">
+              <option value="all" [selected]="subjectFilter() === 'all'">Tutte</option>
+              @for (s of subjects(); track s) {
+                <option [value]="s" [selected]="subjectFilter() === s">{{ s }}</option>
+              }
+            </select>
+            <label for="subject">Materia</label>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (tabEmpty()) {
+      @if (tab() === 'upcoming') {
+        <app-empty-state
+          icon="calendar-x"
+          message="Nessun appello in arrivo."
+          ctaLabel="Vai agli appelli disponibili"
+          (cta)="goExams()" />
+      } @else {
+        <app-empty-state icon="clock-history" message="Nessuno storico prenotazioni." />
+      }
+    } @else if (filteredEmpty()) {
+      <app-empty-state
+        icon="search"
+        message="Nessuna prenotazione per questa materia."
+        ctaLabel="Rimuovi filtro"
+        (cta)="clearSubject()" />
+    } @else {
+
+      <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'prenotazione' : 'prenotazioni' }}</p>
+
+      <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+        <div class="row g-2">
+          <div class="col-lg-2">Data</div>
+          <div class="col-lg-4">Appello</div>
+          <div class="col-lg-2">Sede</div>
+          <div class="col-lg-2">Stato</div>
+          <div class="col-lg-2"></div>
+        </div>
+      </div>
+
+      <ul class="list-group">
+        @for (e of filtered(); track e.id) {
+          <li class="list-group-item">
+            <div class="row g-2 align-items-center">
+              <div class="col-12 col-lg-2">
+                <div class="d-flex align-items-baseline gap-1">
+                  <span class="fs-4 fw-semibold lh-1">{{ e.examDate | date:'d' }}</span>
+                  <span class="text-uppercase small">{{ e.examDate | date:'MMM' }}</span>
+                  <span class="small text-body-secondary">{{ e.examDate | date:'y' }}</span>
+                </div>
+                <div class="small text-body-secondary"><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ e.examDate | date:'HH:mm' }}</div>
+              </div>
+              <div class="col-12 col-lg-4">
+                <a [routerLink]="['/student/courses', e.courseId]" class="fw-semibold text-decoration-none">{{ e.subjectTitle }}</a>
+                <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ e.teacherName }}</div>
+              </div>
+              <div class="col-6 col-lg-2 small">
+                @if (e.location) {
+                  <span><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ e.location }}</span>
+                } @else {
+                  <span class="text-body-secondary">Sede da definire</span>
+                }
+              </div>
+              <div class="col-6 col-lg-2 small">
+                @switch (e.status) {
+                  @case ('scheduled') {
+                    @if (e.future) {
+                      <span class="badge text-bg-primary"><i class="bi bi-calendar-check me-1" aria-hidden="true"></i>Prenotato</span>
+                    } @else {
+                      <span class="badge text-bg-secondary"><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>In attesa di esito</span>
+                    }
+                  }
+                  @case ('passed') {
+                    <span class="badge text-bg-success"><i class="bi bi-award-fill me-1" aria-hidden="true"></i>Superato</span>
+                    @if (e.grade != null) { <span class="fw-semibold ms-1">{{ e.grade }}/30</span> }
+                  }
+                  @case ('failed') {
+                    <span class="badge text-bg-danger"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Non superato</span>
+                  }
+                  @case ('absent') {
+                    <span class="badge text-bg-secondary"><i class="bi bi-dash-circle me-1" aria-hidden="true"></i>Assente</span>
+                  }
+                  @case ('withdrawn') {
+                    <span class="badge text-bg-light"><i class="bi bi-slash-circle me-1" aria-hidden="true"></i>Ritirata</span>
+                  }
+                }
+              </div>
+              <div class="col-12 col-lg-2 d-flex gap-2 justify-content-lg-end">
+                <a [routerLink]="['/student/courses', e.courseId]" class="btn btn-sm btn-outline-primary">Apri</a>
+                @if (canCancel(e)) {
+                  <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="cancelling()" (click)="askCancel(e)">Annulla</button>
+                }
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+}
+
+<ion-alert
+  [isOpen]="confirmOpen()"
+  header="Annullare la prenotazione?"
+  [message]="confirmMessage()"
+  [buttons]="alertButtons"
+  (didDismiss)="confirmOpen.set(false)" />

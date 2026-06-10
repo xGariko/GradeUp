@@ -10,5 +10,6 @@ router.get('/',           requireRole('student'), asyncHandler(controller.catalo
 router.get('/:id',        requireRole('student'), asyncHandler(controller.detail));
 router.get('/:id/exams',  requireRole('student'), asyncHandler(controller.examsForCourse));
 router.get('/:id/archive', requireRole('student'), asyncHandler(controller.materials));
+router.get('/:id/archive/:coursewareId/download', requireRole('student'), asyncHandler(controller.materialDownload));
 
 export default router;

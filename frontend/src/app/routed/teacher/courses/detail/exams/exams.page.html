@@ -1,0 +1,132 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a routerLink="/teacher/courses" class="text-decoration-none">I miei corsi</a></li>
+    <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', courseId]" class="text-decoration-none">{{ exams().data?.courseTitle ?? 'Corso' }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Appelli</li>
+  </ol>
+</nav>
+
+@if (exams().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (notFound()) {
+  <app-empty-state
+    icon="calendar-x"
+    message="Corso non trovato o non assegnato a te."
+    ctaLabel="Torna ai miei corsi"
+    (cta)="goCourses()" />
+} @else if (exams().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else {
+
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h4 mb-0">Appelli</h1>
+    @if (!showForm()) {
+      <button type="button" class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Crea nuovo appello
+      </button>
+    }
+  </div>
+
+  <!-- Form crea/modifica -->
+  @if (showForm()) {
+    <div class="card mb-4">
+      <div class="card-header bg-transparent">
+        <h2 class="h6 mb-0">{{ editId() === null ? 'Nuovo appello' : 'Modifica appello' }}</h2>
+      </div>
+      <div class="card-body">
+        @if (formError(); as fe) {
+          <div class="alert alert-danger py-2" role="alert">{{ fe }}</div>
+        }
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="form-floating">
+              <input type="datetime-local" id="examDate" class="form-control" [value]="formDate()" (input)="onDate($event)">
+              <label for="examDate">Data e ora</label>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="form-floating">
+              <input type="text" id="loc" class="form-control" placeholder="Sede" [value]="formLoc()" (input)="onLoc($event)">
+              <label for="loc">Sede</label>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? 'Salvataggio...' : 'Salva' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary" [disabled]="submitting()" (click)="closeForm()">Annulla</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Tabs -->
+  <ul class="nav nav-pills mb-3 gap-2">
+    @for (t of tabs; track t) {
+      <li class="nav-item">
+        <button type="button" class="nav-link" [class.active]="tab() === t" (click)="setTab(t)">
+          {{ tabLabel(t) }} <span class="badge text-bg-light ms-1">{{ counts()[t] }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+
+  @if (!items().length) {
+    <app-empty-state
+      icon="calendar-plus"
+      message="Nessun appello creato."
+      ctaLabel="Crea il primo appello"
+      (cta)="openCreate()" />
+  } @else if (!visible().length) {
+    <app-empty-state icon="calendar3" message="Nessun appello in questa categoria." />
+  } @else {
+    <ul class="list-group">
+      @for (exam of visible(); track exam.id) {
+        <li class="list-group-item">
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">
+                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ exam.examDate | date:'dd/MM/yyyy HH:mm' }}
+              </div>
+              <div class="small text-body-secondary">
+                @if (exam.location) { <span><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ exam.location }}</span> }
+                <span class="ms-2"><i class="bi bi-people me-1" aria-hidden="true"></i>{{ exam.enrolled }} iscritti</span>
+                <span class="badge {{ statusBadge(exam.status) }} ms-2">{{ statusLabel(exam.status) }}</span>
+              </div>
+            </div>
+
+            @if (confirmId() === exam.id) {
+              <div class="d-flex flex-column gap-2">
+                @if (cancelError(); as ce) {
+                  <div class="alert alert-danger py-2 mb-0 small" role="alert">{{ ce }}</div>
+                }
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="small">Annullare l'appello? Le prenotazioni verranno cancellate.</span>
+                  <button type="button" class="btn btn-sm btn-danger" [disabled]="cancelling()" (click)="confirmCancel(exam)">
+                    {{ cancelling() ? 'Annullamento...' : 'Annulla appello' }}
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="cancelling()" (click)="dismissCancel()">Indietro</button>
+                </div>
+              </div>
+            } @else {
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                @if (exam.status === 'da_verbalizzare') {
+                  <button type="button" class="btn btn-sm btn-warning" (click)="goGrade(exam)">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Verbalizza
+                  </button>
+                }
+                @if (exam.scheduledCount === 0 && exam.status !== 'verbalizzato') {
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openEdit(exam)">Modifica</button>
+                }
+                @if (exam.status !== 'verbalizzato') {
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askCancel(exam.id)">Annulla</button>
+                }
+              </div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

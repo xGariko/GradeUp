@@ -8,5 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/me', asyncHandler(controller.listMine));
+router.post('/read-all', asyncHandler(controller.markAllRead));
+router.patch('/:id/read', asyncHandler(controller.markRead));
 
 export default router;

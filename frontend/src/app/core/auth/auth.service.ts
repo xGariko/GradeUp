@@ -65,6 +65,16 @@ export class AuthService {
         this.router.navigate(['/auth/login']);
     }
 
+    updateUser(user: AuthSession['user']): void {
+        const current = this.session();
+        if (!current) return;
+        const next: AuthSession = { ...current, user };
+        this.session.set(next);
+        if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        }
+    }
+
     private persist(response: AuthResponse): void {
         const sess: AuthSession = {
             token: response.token,

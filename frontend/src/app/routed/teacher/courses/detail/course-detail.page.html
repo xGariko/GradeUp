@@ -1,0 +1,130 @@
+<a routerLink="/teacher/courses" class="btn btn-sm btn-link text-decoration-none px-0 mb-2">
+  <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>I miei corsi
+</a>
+
+@if (detail().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (notFound()) {
+  <app-empty-state
+    icon="journal-x"
+    message="Corso non trovato. Potrebbe non esistere o non essere assegnato a te."
+    ctaLabel="Torna ai miei corsi"
+    (cta)="goCourses()" />
+} @else if (detail().error; as err) {
+  <app-error-state [message]="err" (retry)="loadDetail()" />
+} @else if (course(); as c) {
+
+  <!-- Header -->
+  <header class="mb-4">
+    <h1 class="h3 mb-1">{{ c.subjectTitle }}</h1>
+    <p class="text-body-secondary mb-2">
+      {{ c.degreeTitle }}
+      @if (c.academicYear; as ay) { <span class="ms-2">{{ ay }}/{{ ay + 1 }}</span> }
+      @if (c.semester) { <span class="ms-2">- {{ c.semester }}° semestre</span> }
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <span class="badge text-bg-light">{{ c.cfu }} CFU</span>
+      @if (c.capacity != null) {
+        <span class="badge" [class.text-bg-warning]="nearCapacity()" [class.text-bg-light]="!nearCapacity()">
+          {{ c.enrolled }}/{{ c.capacity }} iscritti
+        </span>
+      } @else {
+        <span class="badge text-bg-light">{{ c.enrolled }} iscritti</span>
+      }
+      @if (c.concluded) {
+        <span class="badge text-bg-secondary">Concluso</span>
+      } @else {
+        <span class="badge text-bg-success">In corso</span>
+      }
+    </div>
+  </header>
+
+  <div class="row g-4">
+
+    <!-- Informazioni corso -->
+    <div class="col-12 col-lg-4">
+      <div class="card h-100">
+        <div class="card-header bg-transparent">
+          <h2 class="h6 mb-0">Informazioni corso</h2>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0 small">
+            <dt class="col-5 text-body-secondary fw-normal">Inizio</dt>
+            <dd class="col-7 mb-2">{{ c.startDate ? (c.startDate | date:'dd/MM/yyyy') : '-' }}</dd>
+            <dt class="col-5 text-body-secondary fw-normal">Fine</dt>
+            <dd class="col-7 mb-2">{{ c.endDate ? (c.endDate | date:'dd/MM/yyyy') : '-' }}</dd>
+          </dl>
+          @if (c.subjectDescription) {
+            <p class="mb-0 mt-2">{{ c.subjectDescription }}</p>
+          }
+          <a [href]="mailtoSegreteria()" class="btn btn-sm btn-outline-secondary mt-3">
+            <i class="bi bi-envelope me-1" aria-hidden="true"></i>Richiedi modifica alla segreteria
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Iscritti -->
+    <div class="col-12 col-lg-8">
+      <div class="card h-100">
+        <div class="card-header bg-transparent">
+          <h2 class="h6 mb-0">Iscritti <span class="text-body-secondary fw-normal">({{ filteredStudents().length }})</span></h2>
+        </div>
+        <div class="card-body p-0">
+          @if (!(detail().data?.students)?.length) {
+            <app-empty-state icon="people" message="Nessun iscritto al corso al momento." />
+          } @else {
+            <div class="p-3 border-bottom">
+              <div class="form-floating">
+                <input type="search" id="q" class="form-control" placeholder="Filtra" [value]="q()" (input)="onSearch($event)">
+                <label for="q">Filtra per cognome o matricola</label>
+              </div>
+            </div>
+            @if (!filteredStudents().length) {
+              <app-empty-state icon="search" message="Nessun iscritto corrisponde al filtro." />
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col">Cognome</th>
+                      <th scope="col">Nome</th>
+                      <th scope="col">Matricola</th>
+                      <th scope="col">Iscrizione</th>
+                      <th scope="col">Stato</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (s of filteredStudents(); track trackStudent(s)) {
+                      <tr>
+                        <td class="fw-semibold">{{ s.surname }}</td>
+                        <td>{{ s.name }}</td>
+                        <td>{{ s.matriculationCode ?? '-' }}</td>
+                        <td>{{ s.registrationDate ? (s.registrationDate | date:'dd/MM/yyyy') : '-' }}</td>
+                        <td><span class="badge {{ statusBadge(s.studentStatus) }}">{{ statusLabel(s.studentStatus) }}</span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Accesso rapido -->
+  <section aria-label="Accesso rapido" class="mt-4">
+    <h2 class="h6 mb-3">Accesso rapido</h2>
+    <div class="d-flex flex-wrap gap-2">
+      <a [routerLink]="['/teacher/courses', c.id, 'archive']" class="btn btn-outline-primary">
+        <i class="bi bi-folder2 me-2" aria-hidden="true"></i>Gestisci materiale
+      </a>
+      <a [routerLink]="['/teacher/courses', c.id, 'exams']" class="btn btn-outline-primary">
+        <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Gestisci appelli
+      </a>
+    </div>
+  </section>
+}

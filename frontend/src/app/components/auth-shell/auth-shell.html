@@ -2,6 +2,8 @@
 
   <div class="d-flex flex-column" style="min-height: 100%;">
 
+    <a href="#main-content" class="visually-hidden-focusable d-inline-block m-2 p-2 bg-primary text-white">Salta al contenuto</a>
+
     <header class="sticky-top bg-dark text-white d-flex align-items-center gap-3 px-3 px-lg-4 py-2">
       <img src="/assets/logo.svg" alt="GradeUp" height="26" class="d-none d-lg-block">
       <h1 class="h5 fw-semibold mb-0 text-truncate me-auto text-white">{{ pageTitle() }}</h1>
@@ -17,6 +19,7 @@
           type="button"
           class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-2 p-1"
           (click)="toggleMenu($event)"
+          [attr.aria-label]="'Menu utente, ' + fullName()"
           [attr.aria-expanded]="menuOpen()"
           aria-haspopup="menu">
           <span
@@ -70,7 +73,7 @@
         }
       </nav>
 
-      <main class="col bg-body-tertiary">
+      <main id="main-content" tabindex="-1" class="col bg-body-tertiary">
         <div class="container-xxl px-3 px-lg-4 py-4">
           <ng-content />
         </div>

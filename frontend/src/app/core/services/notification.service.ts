@@ -11,4 +11,12 @@ export class NotificationService {
     listMine(): Observable<NotificationItem[]> {
         return this.http.get<NotificationItem[]>(NOTIFICATION_ENDPOINTS.mine);
     }
+
+    markRead(id: number): Observable<void> {
+        return this.http.patch<void>(NOTIFICATION_ENDPOINTS.read(id), {});
+    }
+
+    markAllRead(): Observable<void> {
+        return this.http.post<void>(NOTIFICATION_ENDPOINTS.readAll, {});
+    }
 }

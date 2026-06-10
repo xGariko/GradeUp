@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '@db/client';
 import { AppError } from '@middleware/error-handler';
+import { signedUrl } from '@services/storage.service';
 
 async function studentIdOf(userId: number): Promise<number> {
     const result = await db.query<{ id: number }>(
@@ -154,4 +155,34 @@ export async function materials(req: Request, res: Response): Promise<void> {
     );
 
     res.json(result.rows);
+}
+
+export async function materialDownload(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+    const id = courseIdParam(req);
+    const coursewareId = Number(req.params.coursewareId);
+    if (!Number.isInteger(coursewareId) || coursewareId <= 0) throw new AppError(404, 'Materiale non trovato');
+    const studentId = await studentIdOf(req.user.sub);
+
+    const registered = await db.query(
+        'SELECT 1 FROM registration WHERE id_course = $1 AND id_student = $2',
+        [id, studentId],
+    );
+    if ((registered.rowCount ?? 0) === 0) {
+        throw new AppError(403, 'Materiale riservato agli iscritti al corso');
+    }
+
+    const result = await db.query<{ objectKey: string }>(
+        `SELECT f.object_key AS "objectKey"
+           FROM courseware cw
+           JOIN archive a ON a.id = cw.id_archive
+           JOIN file f    ON f.id = cw.id_file
+          WHERE cw.id = $1 AND a.id_course = $2`,
+        [coursewareId, id],
+    );
+    const objectKey = result.rows[0]?.objectKey;
+    if (!objectKey) throw new AppError(404, 'Materiale non trovato');
+
+    const url = await signedUrl(objectKey, 120);
+    res.json({ url });
 }

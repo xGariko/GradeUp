@@ -1,0 +1,155 @@
+<h1 class="h3 mb-3">Profilo</h1>
+
+@if (readOnly()) {
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-lock me-2" aria-hidden="true"></i>
+    Il tuo profilo non risulta attivo ({{ statusLabel() }}): i dati anagrafici sono in sola lettura. Contatta la segreteria.
+  </div>
+}
+
+<div class="row g-4">
+
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent">
+        <span class="text-uppercase small fw-semibold text-body-secondary">Dati anagrafici</span>
+      </div>
+      <div class="card-body">
+        @if (profileError(); as msg) {
+          <div class="alert alert-danger" role="alert">{{ msg }}</div>
+        }
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+          <div class="form-floating mb-3">
+            <input type="text" id="name" class="form-control" [class.is-invalid]="!!profileFieldError('name')"
+                   formControlName="name" placeholder="Nome" autocomplete="given-name">
+            <label for="name">Nome</label>
+            @if (profileFieldError('name'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="form-floating mb-3">
+            <input type="text" id="surname" class="form-control" [class.is-invalid]="!!profileFieldError('surname')"
+                   formControlName="surname" placeholder="Cognome" autocomplete="family-name">
+            <label for="surname">Cognome</label>
+            @if (profileFieldError('surname'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="form-floating mb-3">
+            <input type="tel" id="mobile" class="form-control" [class.is-invalid]="!!profileFieldError('mobile')"
+                   formControlName="mobile" placeholder="Telefono" autocomplete="tel">
+            <label for="mobile">Telefono (opzionale)</label>
+            @if (profileFieldError('mobile'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="form-floating mb-1">
+            <input type="email" id="email" class="form-control" [value]="email()" readonly disabled>
+            <label for="email">Email</label>
+          </div>
+          <p class="small text-body-secondary mb-3">Per cambiare email contatta la segreteria.</p>
+
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="profileForm.invalid || profileForm.pristine || savingProfile() || readOnly()">
+            @if (savingProfile()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+            Salva
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent">
+        <span class="text-uppercase small fw-semibold text-body-secondary">Dati contrattuali</span>
+      </div>
+      <div class="card-body">
+        @if (contractLoading()) {
+          <p class="text-body-secondary small mb-0">Caricamento...</p>
+        } @else if (contractError(); as err) {
+          <app-error-state [message]="err" (retry)="loadContract()" />
+        } @else if (contract()) {
+          <dl class="row mb-0">
+            <dt class="col-5 text-uppercase small text-body-secondary">Stato</dt>
+            <dd class="col-7">{{ statusLabel() }}</dd>
+
+            <dt class="col-5 text-uppercase small text-body-secondary">Tipo di contratto</dt>
+            <dd class="col-7">{{ contractLabel() }}</dd>
+          </dl>
+          <p class="small text-body-secondary mt-3 mb-0">
+            <i class="bi bi-lock me-1" aria-hidden="true"></i>
+            I dati contrattuali sono gestiti dalla segreteria.
+          </p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent">
+        <span class="text-uppercase small fw-semibold text-body-secondary">Sicurezza</span>
+      </div>
+      <div class="card-body">
+        @if (passwordError(); as msg) {
+          <div class="alert alert-danger" role="alert">{{ msg }}</div>
+        }
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+          <div class="input-group mb-3">
+            <div class="form-floating">
+              <input [type]="showCurrent() ? 'text' : 'password'" id="currentPassword" class="form-control"
+                     [class.is-invalid]="!!passwordFieldError('currentPassword')"
+                     formControlName="currentPassword" placeholder="Password attuale" autocomplete="current-password">
+              <label for="currentPassword">Password attuale</label>
+            </div>
+            <button type="button" class="btn btn-outline-secondary" (click)="showCurrent.set(!showCurrent())"
+                    [attr.aria-label]="showCurrent() ? 'Nascondi password' : 'Mostra password'" [attr.aria-pressed]="showCurrent()">
+              <i class="bi" [class.bi-eye]="!showCurrent()" [class.bi-eye-slash]="showCurrent()" aria-hidden="true"></i>
+            </button>
+            @if (passwordFieldError('currentPassword'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="form-floating">
+              <input [type]="showNew() ? 'text' : 'password'" id="newPassword" class="form-control"
+                     [class.is-invalid]="!!passwordFieldError('newPassword')"
+                     formControlName="newPassword" placeholder="Nuova password" autocomplete="new-password">
+              <label for="newPassword">Nuova password</label>
+            </div>
+            <button type="button" class="btn btn-outline-secondary" (click)="showNew.set(!showNew())"
+                    [attr.aria-label]="showNew() ? 'Nascondi password' : 'Mostra password'" [attr.aria-pressed]="showNew()">
+              <i class="bi" [class.bi-eye]="!showNew()" [class.bi-eye-slash]="showNew()" aria-hidden="true"></i>
+            </button>
+            @if (passwordFieldError('newPassword'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+          </div>
+
+          <div class="form-floating mb-3">
+            <input [type]="showNew() ? 'text' : 'password'" id="confirmPassword" class="form-control"
+                   [class.is-invalid]="showConfirmMismatch()"
+                   formControlName="confirmPassword" placeholder="Conferma nuova password" autocomplete="new-password">
+            <label for="confirmPassword">Conferma nuova password</label>
+            @if (showConfirmMismatch()) { <div class="invalid-feedback d-block">Le password non coincidono.</div> }
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="savingPassword()">
+            @if (savingPassword()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+            Cambia password
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent">
+        <span class="text-uppercase small fw-semibold text-body-secondary">Account</span>
+      </div>
+      <div class="card-body">
+        <p class="text-body-secondary small">Esci dal tuo account su questo dispositivo.</p>
+        <button type="button" class="btn btn-outline-danger" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Esci
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -118,8 +118,7 @@
                       @if (f.uploadedAt) { <span class="ms-2">{{ f.uploadedAt | date:'dd/MM/yyyy' }}</span> }
                     </div>
                   </div>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" disabled
-                          title="Download non ancora disponibile">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(f)">
                     <i class="bi bi-download me-1" aria-hidden="true"></i>Scarica
                   </button>
                 </li>

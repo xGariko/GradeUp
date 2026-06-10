@@ -1,0 +1,64 @@
+<h1 class="h3 mb-1">Notifiche</h1>
+<p class="text-body-secondary mb-3">{{ subtitle }}</p>
+
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (state().data; as items) {
+
+  <div class="row g-2 align-items-center mb-3">
+    <div class="col-12 col-lg-auto">
+      <div class="btn-group" role="group" aria-label="Filtro notifiche">
+        <button type="button" class="btn btn-outline-secondary" [class.active]="tab() === 'unread'"
+                [attr.aria-pressed]="tab() === 'unread'" (click)="setTab('unread')">
+          Non lette ({{ unreadCount() }})
+        </button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="tab() === 'all'"
+                [attr.aria-pressed]="tab() === 'all'" (click)="setTab('all')">
+          Tutte ({{ items.length }})
+        </button>
+      </div>
+    </div>
+    @if (unreadCount() > 0) {
+      <div class="col-12 col-lg-auto ms-lg-auto">
+        <button type="button" class="btn btn-outline-primary" [disabled]="bulkBusy()" (click)="markAllRead()">
+          <i class="bi bi-check2-all me-1" aria-hidden="true"></i>Segna tutte come lette
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (current().length === 0) {
+    @if (tab() === 'unread') {
+      <app-empty-state icon="check2-circle" message="Sei in pari. Non hai notifiche da leggere." />
+    } @else {
+      <app-empty-state icon="bell-slash" message="Nessuna notifica." />
+    }
+  } @else {
+
+    <ul class="list-group">
+      @for (n of current(); track n.id) {
+        <li class="list-group-item" [class.bg-body-tertiary]="n.read">
+          <div class="d-flex gap-3 align-items-start">
+            <i [class]="iconClass(n.severity)" aria-hidden="true"></i>
+            <div class="flex-grow-1">
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <span [class.fw-semibold]="!n.read">{{ n.title }}</span>
+                @if (!n.read) { <span class="badge text-bg-primary">Nuova</span> }
+              </div>
+              <p class="mb-1 small text-break" [class.text-body-secondary]="n.read">{{ n.body }}</p>
+              <span class="small text-body-secondary" [title]="n.createdAt | date:'dd/MM/yyyy HH:mm'">{{ relative(n.createdAt) }}</span>
+            </div>
+            @if (!n.read) {
+              <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                      [disabled]="busy(n.id)" (click)="markRead(n)">
+                Segna come letta
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

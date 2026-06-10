@@ -1,0 +1,122 @@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <h1 class="h4 mb-0">Calendario appelli</h1>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row g-2 align-items-center">
+      <div class="col-12 col-lg-4">
+        <div class="form-floating">
+          <select id="course" class="form-select" (change)="onCourse($event)">
+            <option value="" [selected]="course() === ''">Tutti</option>
+            @for (c of courseOptions(); track c.courseId) {
+              <option [value]="c.courseId" [selected]="courseSelected(c.courseId)">{{ c.label }}</option>
+            }
+          </select>
+          <label for="course">Corso</label>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="form-floating">
+          <select id="year" class="form-select" (change)="onYear($event)">
+            <option value="" [selected]="year() === ''">Tutti</option>
+            @for (y of years(); track y) {
+              <option [value]="y" [selected]="yearSelected(y)">{{ y }}/{{ y + 1 }}</option>
+            }
+          </select>
+          <label for="year">Anno accademico</label>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="form-floating">
+          <select id="status" class="form-select" [value]="status()" (change)="onStatus($event)">
+            <option value="">Tutti</option>
+            <option value="in_programma">In programma</option>
+            <option value="da_verbalizzare">Da verbalizzare</option>
+            <option value="verbalizzato">Verbalizzato</option>
+          </select>
+          <label for="status">Stato</label>
+        </div>
+      </div>
+      <div class="col-12 col-lg-2 text-lg-end">
+        <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (exams().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (exams().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (exams().data; as all) {
+  @if (!all.length) {
+    <app-empty-state
+      icon="calendar-x"
+      message="Non hai ancora creato appelli. Aprili dalla pagina di un corso." />
+  } @else if (!filtered().length) {
+    <app-empty-state
+      icon="search"
+      message="Nessun appello con questi filtri."
+      ctaLabel="Rimuovi filtri"
+      (cta)="clearFilters()" />
+  } @else {
+
+    <p class="text-body-secondary small mb-2">{{ filtered().length }} appelli</p>
+
+    <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+      <div class="row g-2">
+        <div class="col-lg-2">Data</div>
+        <div class="col-lg-3">Corso</div>
+        <div class="col-lg-2">Sede</div>
+        <div class="col-lg-1">Iscritti</div>
+        <div class="col-lg-2">Stato</div>
+        <div class="col-lg-2"></div>
+      </div>
+    </div>
+
+    <ul class="list-group">
+      @for (e of filtered(); track e.id) {
+        <li class="list-group-item">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-lg-2">
+              <span class="fw-semibold">
+                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ e.examDate | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ e.examDate | date:'HH:mm' }}</span>
+            </div>
+            <div class="col-12 col-lg-3">
+              <a [routerLink]="['/teacher/courses', e.courseId]" class="fw-semibold text-decoration-none">{{ e.courseTitle }}</a>
+              @if (e.academicYear; as ay) {
+                <span class="small text-body-secondary d-block">{{ ay }}/{{ ay + 1 }}</span>
+              }
+            </div>
+            <div class="col-6 col-lg-2 small">
+              @if (e.location) {
+                <span><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ e.location }}</span>
+              } @else {
+                <span class="text-body-secondary">n/d</span>
+              }
+            </div>
+            <div class="col-6 col-lg-1 small">
+              <i class="bi bi-people me-1" aria-hidden="true"></i>{{ e.enrolled }}
+            </div>
+            <div class="col-6 col-lg-2">
+              <span class="badge {{ statusBadge(e.status) }}">{{ statusLabel(e.status) }}</span>
+            </div>
+            <div class="col-6 col-lg-2">
+              <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                @if (e.status === 'da_verbalizzare') {
+                  <a [routerLink]="['/teacher/exams', e.id, 'grade']" class="btn btn-sm btn-warning">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Verbalizza
+                  </a>
+                }
+                <a [routerLink]="['/teacher/courses', e.courseId, 'exams']" class="btn btn-sm btn-outline-secondary">Gestisci</a>
+              </div>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

@@ -247,3 +247,24 @@ export async function createEnrollment(req: Request, res: Response): Promise<voi
 
     res.status(201).json({ ok: true });
 }
+
+export async function withdrawEnrollment(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+
+    const idEnrollment = Number(req.params.id);
+    if (!Number.isInteger(idEnrollment) || idEnrollment <= 0) {
+        throw new AppError(400, 'Prenotazione non valida');
+    }
+
+    const studentId = await studentIdOf(req.user.sub);
+
+    const updated = await db.query(
+        `UPDATE enrollment
+            SET status = 'withdrawn', withdrawal_date = CURRENT_DATE
+          WHERE id = $1 AND id_student = $2 AND status = 'scheduled'`,
+        [idEnrollment, studentId],
+    );
+    if ((updated.rowCount ?? 0) === 0) throw new AppError(404, 'Prenotazione non trovata');
+
+    res.json({ ok: true });
+}

@@ -58,6 +58,10 @@ export class CourseDetailService {
         return this.http.get<CourseMaterial[]>(COURSE_ENDPOINTS.archive(id));
     }
 
+    downloadUrl(id: number, coursewareId: number): Observable<{ url: string }> {
+        return this.http.get<{ url: string }>(COURSE_ENDPOINTS.archiveDownload(id, coursewareId));
+    }
+
     register(idCourse: number): Observable<{ ok: boolean }> {
         return this.http.post<{ ok: boolean }>(ME_ENDPOINTS.registrations, { id_course: idCourse });
     }

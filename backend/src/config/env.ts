@@ -7,6 +7,8 @@ interface Env {
     PORT: number;
     DATABASE_URL: string;
     JWT_SECRET: string;
+    SUPABASE_URL: string;
+    SUPABASE_SERVICE_ROLE_KEY: string;
 }
 
 function getEnv(key: string, required = true): string {
@@ -22,4 +24,6 @@ export const env: Env = {
     PORT: parseInt(getEnv('PORT', false) || '3000', 10),
     DATABASE_URL: getEnv('DATABASE_URL'),
     JWT_SECRET: getEnv('JWT_SECRET'),
+    SUPABASE_URL: getEnv('SUPABASE_URL'),
+    SUPABASE_SERVICE_ROLE_KEY: getEnv('SUPABASE_SERVICE_ROLE_KEY'),
 };

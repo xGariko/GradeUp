@@ -1,0 +1,152 @@
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (notFound()) {
+  <app-empty-state
+    icon="clipboard-x"
+    message="Appello non trovato o non assegnato a te."
+    ctaLabel="Torna ai miei corsi"
+    (cta)="goCourses()" />
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (exam(); as ex) {
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a routerLink="/teacher/courses" class="text-decoration-none">I miei corsi</a></li>
+      <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', ex.courseId, 'exams']" class="text-decoration-none">{{ ex.courseTitle }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Verbalizzazione</li>
+    </ol>
+  </nav>
+
+  <header class="mb-4">
+    <h1 class="h4 mb-1">Verbalizzazione appello</h1>
+    <p class="text-body-secondary mb-3">
+      {{ ex.courseTitle }} - {{ ex.examDate | date:'dd/MM/yyyy HH:mm' }}
+      @if (ex.location) { - {{ ex.location }} }
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <span class="badge text-bg-light border">Iscritti: {{ ex.enrolledCount }}</span>
+      <span class="badge text-bg-light border">Verbalizzati: {{ ex.gradedCount }}</span>
+      <span class="badge text-bg-light border">Da verbalizzare: {{ ex.pendingCount }}</span>
+    </div>
+  </header>
+
+  @if (ex.enrolledCount === 0) {
+    <app-empty-state icon="people" message="Nessuno studente iscritto a questo appello." />
+  } @else if (ex.allGraded) {
+    <div class="alert alert-secondary d-flex align-items-center gap-2" role="alert">
+      <i class="bi bi-check2-circle" aria-hidden="true"></i>
+      <span>Appello già verbalizzato. La pagina è in sola lettura.</span>
+    </div>
+    <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }" />
+  } @else {
+
+    @if (saveError(); as se) {
+      <div class="alert alert-danger" role="alert">{{ se }}</div>
+    }
+
+    @if (gradedRows().length) {
+      <h2 class="h6 text-body-secondary">Già verbalizzati</h2>
+      <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }" />
+    }
+
+    <h2 class="h6 text-body-secondary mt-4">Da verbalizzare</h2>
+    <div class="d-none d-md-flex row g-2 px-3 pb-2 small text-body-secondary fw-semibold">
+      <div class="col-md-4">Studente</div>
+      <div class="col-md-2">Matricola</div>
+      <div class="col-md-3">Esito</div>
+      <div class="col-md-3">Voto</div>
+    </div>
+    <ul class="list-group mb-3">
+      @for (row of editableRows(); track row.enrollmentId) {
+        <li class="list-group-item" [class.border-info]="isDirtyRow(row.enrollmentId)">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-4">
+              <span class="fw-semibold">{{ row.surname }} {{ row.name }}</span>
+              @if (isDirtyRow(row.enrollmentId)) {
+                <span class="badge text-bg-info ms-2">modificato</span>
+              }
+            </div>
+            <div class="col-6 col-md-2 small text-body-secondary">
+              <span class="d-md-none">Matricola: </span>{{ row.matriculationCode ?? '-' }}
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small mb-1 d-md-none" [attr.for]="'st-' + row.enrollmentId">Esito</label>
+              <select
+                class="form-select form-select-sm"
+                [id]="'st-' + row.enrollmentId"
+                [attr.aria-label]="'Esito di ' + row.surname + ' ' + row.name"
+                [value]="statusValue(row.enrollmentId)"
+                [disabled]="submitting()"
+                (change)="onStatus(row, $event)">
+                <option value="">Da verbalizzare</option>
+                @for (opt of finalOptions; track opt) {
+                  <option [value]="opt">{{ statusLabel(opt) }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small mb-1 d-md-none" [attr.for]="'gr-' + row.enrollmentId">Voto</label>
+              <input
+                type="number" min="18" max="30" inputmode="numeric"
+                class="form-control form-control-sm"
+                [class.is-invalid]="gradeError(row.enrollmentId)"
+                [id]="'gr-' + row.enrollmentId"
+                [attr.aria-label]="'Voto di ' + row.surname + ' ' + row.name"
+                [value]="draftOf(row.enrollmentId).grade ?? ''"
+                [disabled]="submitting() || draftOf(row.enrollmentId).status !== 'passed'"
+                (input)="onGrade(row, $event)">
+              @if (gradeError(row.enrollmentId); as ge) {
+                <div class="invalid-feedback d-block">{{ ge }}</div>
+              }
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+
+    <div class="sticky-bottom bg-body border-top py-3">
+      @if (confirming()) {
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-2">
+          <p class="mb-0 flex-grow-1">
+            Stai per verbalizzare {{ dirtyCount() }} {{ dirtyCount() === 1 ? 'studente' : 'studenti' }}.
+            Una volta confermato, gli esiti saranno definitivi e gli studenti vedranno il voto.
+          </p>
+          <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="confirmSave()">
+            {{ submitting() ? 'Verbalizzazione...' : 'Conferma verbalizzazione' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary" [disabled]="submitting()" (click)="dismissSave()">Indietro</button>
+        </div>
+      } @else {
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="flex-grow-1 text-body-secondary">
+            Da salvare: {{ dirtyCount() }} {{ dirtyCount() === 1 ? 'riga modificata' : 'righe modificate' }}.
+          </span>
+          <button type="button" class="btn btn-outline-secondary" [disabled]="dirtyCount() === 0" (click)="resetEdits()">Annulla modifiche</button>
+          <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="askSave()">Salva verbalizzazione</button>
+        </div>
+      }
+    </div>
+  }
+}
+
+<ng-template #readonlyList let-rows="rows">
+  <ul class="list-group mb-3">
+    @for (row of rows; track row.enrollmentId) {
+      <li class="list-group-item">
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-md-4 fw-semibold">{{ row.surname }} {{ row.name }}</div>
+          <div class="col-6 col-md-2 small text-body-secondary">
+            <span class="d-md-none">Matricola: </span>{{ row.matriculationCode ?? '-' }}
+          </div>
+          <div class="col-6 col-md-3">
+            <span class="badge {{ statusBadge(row.status) }}">{{ statusLabel(row.status) }}</span>
+          </div>
+          <div class="col-12 col-md-3 small">
+            @if (row.grade !== null) { Voto: <span class="fw-semibold">{{ row.grade }}</span> }
+          </div>
+        </div>
+      </li>
+    }
+  </ul>
+</ng-template>

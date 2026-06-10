@@ -2,58 +2,56 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { z } from 'zod';
-import {
-    IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonList, IonItem, IonInput, IonNote, IonButton, IonIcon, IonSpinner,
-    IonBadge,
-} from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import {
-    personOutline, schoolOutline, lockClosedOutline, logOutOutline,
-    saveOutline, alertCircleOutline, checkmarkCircleOutline,
-} from 'ionicons/icons';
 import { AuthService } from '$core/auth/auth.service';
 import { MeService } from '$core/services/me.service';
 import { StudentDashboardService } from '$core/services/student-dashboard.service';
+import { ToastService } from '$core/toast/toast.service';
 import { zodValidator } from '$core/validators/zod.validator';
+import { ErrorState } from '$components/error-state/error-state';
 import type { StudentCareerSummary } from '$shared/types/dashboard';
 
-const nameSchema   = z.string().min(1, 'Campo obbligatorio').max(40, 'Max 40 caratteri');
-const mobileSchema = z.string().max(20, 'Max 20 caratteri').optional();
+const nameSchema    = z.string().min(1, 'Campo obbligatorio').max(40, 'Max 40 caratteri');
+const mobileSchema  = z.string().max(20, 'Max 20 caratteri').optional();
 const currentSchema = z.string().min(1, 'Inserisci la password attuale');
-const newSchema     = z.string().min(8, 'Minimo 8 caratteri');
+const newSchema     = z.string().min(8, 'Minimo 8 caratteri').max(255, 'Max 255 caratteri');
 
-type FeedbackKind = 'success' | 'error';
-interface Feedback { kind: FeedbackKind; message: string; }
+const READ_ONLY_STATUSES = new Set<string>(['suspended', 'withdrawn', 'graduated']);
+
+const STATUS_LABELS: Record<string, string> = {
+    not_matriculated: 'Non immatricolato',
+    pending:          'In attesa di approvazione',
+    active:           'Attiva',
+    suspended:        'Sospesa',
+    withdrawn:        'Ritirata',
+    graduated:        'Conseguita',
+};
 
 @Component({
     selector: 'app-profile',
-    imports: [
-        ReactiveFormsModule,
-        IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-        IonList, IonItem, IonInput, IonNote, IonButton, IonIcon, IonSpinner,
-        IonBadge,
-    ],
+    imports: [ReactiveFormsModule, ErrorState],
     templateUrl: './profile.page.html',
-    styleUrl: './profile.page.scss',
     host: { class: 'd-block' },
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage {
-    private readonly fb       = inject(FormBuilder);
-    private readonly me       = inject(MeService);
-    private readonly dash     = inject(StudentDashboardService);
-    protected readonly auth   = inject(AuthService);
+    private readonly fb     = inject(FormBuilder);
+    private readonly me     = inject(MeService);
+    private readonly dash   = inject(StudentDashboardService);
+    private readonly toasts = inject(ToastService);
+    protected readonly auth = inject(AuthService);
 
-    protected readonly career         = signal<StudentCareerSummary | null>(null);
-    protected readonly careerLoading  = signal(true);
-    protected readonly careerError    = signal<string | null>(null);
+    protected readonly career        = signal<StudentCareerSummary | null>(null);
+    protected readonly careerLoading = signal(true);
+    protected readonly careerError   = signal<string | null>(null);
 
-    protected readonly savingProfile  = signal(false);
-    protected readonly profileFeedback = signal<Feedback | null>(null);
+    protected readonly savingProfile = signal(false);
+    protected readonly profileError  = signal<string | null>(null);
 
-    protected readonly savingPassword   = signal(false);
-    protected readonly passwordFeedback = signal<Feedback | null>(null);
+    protected readonly savingPassword = signal(false);
+    protected readonly passwordError  = signal<string | null>(null);
+
+    protected readonly showCurrent = signal(false);
+    protected readonly showNew     = signal(false);
 
     protected readonly profileForm = this.fb.nonNullable.group({
         name:    [this.auth.user()?.name    ?? '', zodValidator(nameSchema)],
@@ -67,22 +65,19 @@ export class ProfilePage {
         confirmPassword: [''],
     });
 
-    protected readonly initials = computed(() => {
-        const u = this.auth.user();
-        if (!u) return '';
-        return `${u.name[0] ?? ''}${u.surname[0] ?? ''}`.toUpperCase();
+    protected readonly email = computed(() => this.auth.user()?.email ?? '');
+
+    protected readonly readOnly = computed(() => {
+        const c = this.career();
+        return !!c && READ_ONLY_STATUSES.has(c.status);
     });
 
-    protected readonly fullName = computed(() => {
-        const u = this.auth.user();
-        return u ? `${u.name} ${u.surname}` : '';
+    protected readonly statusLabel = computed(() => {
+        const c = this.career();
+        return c ? (STATUS_LABELS[c.status] ?? c.status) : '';
     });
 
     constructor() {
-        addIcons({
-            personOutline, schoolOutline, lockClosedOutline, logOutOutline,
-            saveOutline, alertCircleOutline, checkmarkCircleOutline,
-        });
         this.loadCareer();
     }
 
@@ -93,22 +88,23 @@ export class ProfilePage {
             next: data => {
                 this.career.set(data);
                 this.careerLoading.set(false);
+                if (READ_ONLY_STATUSES.has(data.status)) this.profileForm.disable();
             },
             error: () => {
-                this.careerError.set('Impossibile caricare i dati di carriera');
+                this.careerError.set('Impossibile caricare i dati di carriera.');
                 this.careerLoading.set(false);
             },
         });
     }
 
-    protected showProfileError(field: 'name' | 'surname' | 'mobile'): boolean {
+    protected profileFieldError(field: 'name' | 'surname' | 'mobile'): string | null {
         const ctrl = this.profileForm.controls[field];
-        return ctrl.invalid && (ctrl.dirty || ctrl.touched);
+        return ctrl.invalid && (ctrl.dirty || ctrl.touched) ? (ctrl.getError('zod') as string) : null;
     }
 
-    protected showPasswordError(field: 'currentPassword' | 'newPassword'): boolean {
+    protected passwordFieldError(field: 'currentPassword' | 'newPassword'): string | null {
         const ctrl = this.passwordForm.controls[field];
-        return ctrl.invalid && (ctrl.dirty || ctrl.touched);
+        return ctrl.invalid && (ctrl.dirty || ctrl.touched) ? (ctrl.getError('zod') as string) : null;
     }
 
     protected showConfirmMismatch(): boolean {
@@ -116,71 +112,69 @@ export class ProfilePage {
         return c.confirmPassword.touched && c.confirmPassword.value !== c.newPassword.value;
     }
 
-    protected async saveProfile(): Promise<void> {
+    protected saveProfile(): void {
+        if (this.savingProfile() || this.readOnly()) return;
         if (this.profileForm.invalid) {
             this.profileForm.markAllAsTouched();
             return;
         }
         this.savingProfile.set(true);
-        this.profileFeedback.set(null);
+        this.profileError.set(null);
 
         const dto = this.profileForm.getRawValue();
-        this.me.updateProfile({
-            name:    dto.name,
-            surname: dto.surname,
-            mobile:  dto.mobile || null,
-        }).subscribe({
-            next: () => {
+        this.me.updateProfile({ name: dto.name, surname: dto.surname, mobile: dto.mobile || null }).subscribe({
+            next: res => {
                 this.savingProfile.set(false);
-                this.profileFeedback.set({ kind: 'success', message: 'Dati aggiornati' });
+                this.auth.updateUser(res.user);
+                this.profileForm.markAsPristine();
+                void this.notify('Dati aggiornati.');
             },
             error: (err: unknown) => {
                 this.savingProfile.set(false);
-                this.profileFeedback.set({
-                    kind: 'error',
-                    message: err instanceof HttpErrorResponse
-                        ? ((err.error as { error?: string })?.error ?? 'Errore durante il salvataggio')
-                        : 'Errore di connessione',
-                });
+                this.profileError.set(this.errorMessage(err, 'Errore durante il salvataggio.'));
             },
         });
     }
 
-    protected async changePassword(): Promise<void> {
+    protected changePassword(): void {
+        if (this.savingPassword()) return;
         if (this.passwordForm.invalid || this.showConfirmMismatch()) {
             this.passwordForm.markAllAsTouched();
             return;
         }
         const v = this.passwordForm.getRawValue();
         if (v.currentPassword === v.newPassword) {
-            this.passwordFeedback.set({ kind: 'error', message: 'La nuova password deve essere diversa' });
+            this.passwordError.set('La nuova password deve essere diversa da quella attuale.');
             return;
         }
         this.savingPassword.set(true);
-        this.passwordFeedback.set(null);
+        this.passwordError.set(null);
 
-        this.me.changePassword({
-            currentPassword: v.currentPassword,
-            newPassword:     v.newPassword,
-        }).subscribe({
+        this.me.changePassword({ currentPassword: v.currentPassword, newPassword: v.newPassword }).subscribe({
             next: () => {
                 this.savingPassword.set(false);
-                this.passwordFeedback.set({ kind: 'success', message: 'Password aggiornata' });
                 this.passwordForm.reset();
+                void this.notify('Password aggiornata.');
             },
             error: (err: unknown) => {
                 this.savingPassword.set(false);
-                this.passwordFeedback.set({
-                    kind: 'error',
-                    message: err instanceof HttpErrorResponse
-                        ? ((err.error as { error?: string })?.error ?? 'Errore durante il cambio password')
-                        : 'Errore di connessione',
-                });
+                this.passwordError.set(this.errorMessage(err, 'Errore durante il cambio password.'));
             },
         });
     }
 
     protected logout(): void {
         this.auth.logout();
+    }
+
+    private errorMessage(err: unknown, fallback: string): string {
+        if (err instanceof HttpErrorResponse && err.error && typeof err.error.error === 'string') {
+            return err.error.error;
+        }
+        return fallback;
+    }
+
+    private notify(message: string): void {
+        this.toasts.show(message);
     }
 }

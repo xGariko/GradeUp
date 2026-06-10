@@ -3,10 +3,10 @@
 // ================================================================
 
 $color-primary:   #0A58CA;  // blu azione. AA ~5:1 su bianco (testo e fill con testo bianco)
-$color-secondary: #6C757D;  // grigio neutro (.btn-secondary)
+$color-secondary: #5B6473;  // grigio navy-tinted. AA ~5.8:1 su #f8f9fa: btn-outline-secondary come testo passa
 $color-success:   #198754;
 $color-warning:   #FFC107;
-$color-danger:    #DC3545;
+$color-danger:    #C82333;  // rosso piu' profondo. AA ~5.4:1 su #f8f9fa: btn-outline-danger e invalid-feedback come testo passano
 $color-light:     #F8F9FA;
 $color-dark:      #1F2A3D;  // navy: chrome/inchiostro, .bg-dark / .text-bg-dark
 $color-medium:    #6B7585;  // grigio neutro per stati/icone Ionic

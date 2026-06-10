@@ -4,12 +4,21 @@ import { Observable } from 'rxjs';
 import type { MeResponse, UpdateProfileDto, ChangePasswordDto } from '$shared/types/me';
 import { ME_ENDPOINTS } from '$core/api/api.constants';
 
+export interface TeacherProfileInfo {
+    status:       string;
+    contractType: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class MeService {
     private readonly http = inject(HttpClient);
 
     get(): Observable<MeResponse> {
         return this.http.get<MeResponse>(ME_ENDPOINTS.me);
+    }
+
+    teacherProfile(): Observable<TeacherProfileInfo> {
+        return this.http.get<TeacherProfileInfo>(ME_ENDPOINTS.teacherProfile);
     }
 
     updateProfile(dto: UpdateProfileDto): Observable<MeResponse> {

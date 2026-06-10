@@ -1,0 +1,165 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a routerLink="/teacher/courses" class="text-decoration-none">I miei corsi</a></li>
+    <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', courseId]" class="text-decoration-none">{{ archive().data?.courseTitle ?? 'Corso' }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Materiale</li>
+  </ol>
+</nav>
+
+@if (archive().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (notFound()) {
+  <app-empty-state
+    icon="folder-x"
+    message="Corso non trovato o non assegnato a te."
+    ctaLabel="Torna ai miei corsi"
+    (cta)="load()" />
+} @else if (archive().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else {
+
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-0">Materiale didattico</h1>
+      <p class="text-body-secondary small mb-0">{{ items().length }} file - {{ humanSize(totalSize()) }} totali</p>
+    </div>
+    <div>
+      <input #fileInput type="file" multiple hidden (change)="onPick($event)" />
+      <button type="button" class="btn btn-primary" (click)="fileInput.click()">
+        <i class="bi bi-upload me-2" aria-hidden="true"></i>Carica file
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar filtri -->
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-lg-8">
+      <div class="form-floating">
+        <input type="search" id="q" class="form-control" placeholder="Cerca" [value]="q()" (input)="onSearch($event)">
+        <label for="q">Cerca per nome</label>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="form-floating">
+        <select id="cat" class="form-select" [value]="category()" (change)="onCategory($event)">
+          <option value="">Tutti i tipi</option>
+          <option value="pdf">PDF</option>
+          <option value="document">Documenti</option>
+          <option value="image">Immagini</option>
+          <option value="video">Video</option>
+          <option value="archive">Archivi</option>
+          <option value="other">Altro</option>
+        </select>
+        <label for="cat">Tipo</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload in corso / in coda / falliti -->
+  @if (uploads().length) {
+    <ul class="list-group mb-3">
+      @for (u of uploads(); track u.tempId) {
+        <li class="list-group-item">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-arrow-up text-body-secondary" aria-hidden="true"></i>
+            <span class="text-truncate flex-grow-1">{{ u.name }}</span>
+            @if (u.status === 'uploading') {
+              <span class="small text-body-secondary">{{ u.progress }}%</span>
+            } @else if (u.status === 'queued') {
+              <span class="small text-body-secondary">In coda</span>
+            } @else if (u.status === 'error') {
+              <span class="small text-danger-emphasis">{{ u.error }}</span>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="retry(u)">Riprova</button>
+              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="dismissUpload(u.tempId)" aria-label="Rimuovi">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+            }
+          </div>
+          @if (u.status === 'uploading') {
+            <div class="progress mt-2" role="progressbar" [attr.aria-valuenow]="u.progress" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" [style.width.%]="u.progress"></div>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Zona drag-drop + lista -->
+  <div
+    class="rounded border p-2"
+    [class.border-primary]="dragging()"
+    [class.bg-primary-subtle]="dragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)">
+
+    @if (!items().length) {
+      <app-empty-state
+        icon="cloud-arrow-up"
+        message="Nessun file caricato. Trascina qui i file o usa Carica file."
+        ctaLabel="Carica primo file"
+        (cta)="fileInput.click()" />
+    } @else if (!filtered().length) {
+      <app-empty-state icon="search" message="Nessun file corrisponde ai filtri." />
+    } @else {
+      <ul class="list-group list-group-flush">
+        @for (item of filtered(); track item.id) {
+          <li class="list-group-item">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+              <i class="bi bi-{{ kind(item.mimeType).icon }} fs-3 text-body-secondary lh-1" aria-hidden="true"></i>
+
+              <div class="flex-grow-1 overflow-hidden">
+                @if (editingId() === item.id) {
+                  <div class="input-group input-group-sm">
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="editTitle()"
+                      (input)="onEditInput($event)"
+                      (keyup.enter)="saveRename(item)"
+                      (keyup.escape)="cancelRename()"
+                      aria-label="Nuovo titolo">
+                    <button type="button" class="btn btn-primary" (click)="saveRename(item)">Salva</button>
+                    <button type="button" class="btn btn-outline-secondary" (click)="cancelRename()">Annulla</button>
+                  </div>
+                } @else {
+                  <div class="fw-semibold text-truncate">{{ item.title }}</div>
+                  <div class="small text-body-secondary text-truncate">
+                    {{ item.originalName }}
+                  </div>
+                }
+                <div class="small text-body-secondary">
+                  <span class="badge text-bg-light">{{ kind(item.mimeType).label }}</span>
+                  <span class="ms-2">{{ humanSize(+item.size) }}</span>
+                  <span class="ms-2">{{ item.uploadedAt | date:'dd/MM/yyyy' }}</span>
+                  <span class="ms-2"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ item.uploadedBy }}</span>
+                </div>
+              </div>
+
+              @if (confirmId() === item.id) {
+                <div class="d-flex align-items-center gap-2">
+                  <span class="small">Eliminare definitivamente?</span>
+                  <button type="button" class="btn btn-sm btn-danger" (click)="confirmDelete(item)">Elimina</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelDelete()">Annulla</button>
+                </div>
+              } @else if (editingId() !== item.id) {
+                <div class="d-flex align-items-center gap-1">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(item)" aria-label="Scarica">
+                    <i class="bi bi-download" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startRename(item)" aria-label="Rinomina">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askDelete(item.id)" aria-label="Elimina">
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}

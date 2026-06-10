@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { IonAlert, ToastController } from '@ionic/angular/standalone';
+import { IonAlert } from '@ionic/angular/standalone';
 import { RegistrationsService, MyRegistration } from '$core/services/registrations.service';
+import { ToastService } from '$core/toast/toast.service';
 import { EmptyState } from '$components/empty-state/empty-state';
 import { ErrorState } from '$components/error-state/error-state';
 
@@ -31,7 +32,7 @@ interface AlertButton {
 export class RegistrationsPage {
     private readonly service = inject(RegistrationsService);
     private readonly router  = inject(Router);
-    private readonly toast   = inject(ToastController);
+    private readonly toast   = inject(ToastService);
 
     protected readonly state    = signal<AsyncState<MyRegistration[]>>(initial());
     protected readonly year     = signal<YearFilter>('all');
@@ -137,12 +138,12 @@ export class RegistrationsPage {
             next: () => {
                 this.submitting.set(false);
                 this.removing.update(set => new Set(set).add(reg.courseId));
-                void this.notify('Iscrizione annullata.');
+                this.toast.show('Iscrizione annullata.');
                 setTimeout(() => this.finalizeRemoval(reg.courseId), 250);
             },
             error: (err: unknown) => {
                 this.submitting.set(false);
-                void this.notify(this.errorMessage(err, 'Operazione non riuscita. Riprova.'));
+                this.toast.show(this.errorMessage(err, 'Operazione non riuscita. Riprova.'));
             },
         });
     }
@@ -165,10 +166,5 @@ export class RegistrationsPage {
             return err.error.error;
         }
         return fallback;
-    }
-
-    private async notify(message: string): Promise<void> {
-        const toast = await this.toast.create({ message, duration: 2500, position: 'top' });
-        await toast.present();
     }
 }

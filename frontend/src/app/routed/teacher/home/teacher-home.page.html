@@ -1,5 +1,174 @@
-<ion-content class="ion-padding">
-  <div class="container-xxl px-0">
-    <h1 class="font-display fw-semibold">Home docente</h1>
+<!-- Saluto -->
+<section aria-label="Saluto" class="mb-4">
+  <div class="card">
+    <div class="card-body d-flex align-items-start gap-3">
+      <i class="bi bi-mortarboard fs-2 lh-1 text-primary" aria-hidden="true"></i>
+      <div>
+        <h2 class="h5 mb-1">Buongiorno, prof. {{ surname() }}</h2>
+        <p class="mb-0 text-body-secondary">Ecco il riepilogo della tua attività didattica.</p>
+      </div>
+    </div>
   </div>
-</ion-content>
+</section>
+
+<div class="row g-4">
+
+  <!-- Da verbalizzare (in alto a tutta larghezza quando ci sono esami in sospeso) -->
+  <div class="col-12" [class.col-lg-6]="!gradingProminent()" [class.order-first]="gradingProminent()">
+    <div class="card h-100" [class.border-warning]="gradingProminent()">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Da verbalizzare</h2>
+        @if (gradingCount() > 0) {
+          <span class="badge text-bg-warning">{{ gradingCount() }}</span>
+        }
+      </div>
+      <div class="card-body p-0">
+        @if (grading().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (grading().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadGrading()" /></div>
+        } @else if (grading().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (item of list; track item.examId) {
+                <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+                  <div>
+                    <div class="fw-semibold">{{ item.courseTitle }}</div>
+                    <div class="small text-body-secondary">
+                      <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ item.examDate | date:'dd/MM/yyyy' }}
+                      <span class="ms-2">{{ item.pendingCount }} in attesa</span>
+                    </div>
+                  </div>
+                  <a [routerLink]="['/teacher/exams', item.examId, 'grade']" class="btn btn-sm btn-warning flex-shrink-0">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Verbalizza
+                  </a>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state icon="check2-circle" message="Nessun esame da verbalizzare." />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- I miei corsi -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">I miei corsi</h2>
+        <a routerLink="/teacher/courses" class="small text-decoration-none">Vedi tutti</a>
+      </div>
+      <div class="card-body p-0">
+        @if (courses().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (courses().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadCourses()" /></div>
+        } @else if (courses().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (course of list.slice(0, 5); track course.courseId) {
+                <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                  <div>
+                    <a [routerLink]="['/teacher/courses', course.courseId]" class="fw-semibold text-decoration-none">{{ course.title }}</a>
+                    <div class="small text-body-secondary">
+                      <i class="bi bi-people me-1" aria-hidden="true"></i>{{ course.enrolledCount }} iscritti
+                      <span class="ms-2"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ semesterLabel(course.semester) }}</span>
+                    </div>
+                  </div>
+                  <span class="badge text-bg-light flex-shrink-0">{{ course.cfu }} CFU</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state icon="journal-x" message="Non ti sono ancora stati assegnati corsi per questo anno accademico. Contatta la segreteria." />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Prossimi appelli -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Prossimi appelli</h2>
+        <a routerLink="/teacher/exams" class="small text-decoration-none">Vedi tutti</a>
+      </div>
+      <div class="card-body p-0">
+        @if (exams().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (exams().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadExams()" /></div>
+        } @else if (exams().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (exam of list.slice(0, 3); track exam.examId) {
+                <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                  <div>
+                    <div class="fw-semibold">{{ exam.courseTitle }}</div>
+                    <div class="small text-body-secondary">
+                      <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ exam.examDate | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                  <span class="badge text-bg-light flex-shrink-0">{{ exam.enrolledStudents }} prenotati</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state icon="calendar-x" message="Nessun appello in programma." />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Ultime notifiche -->
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">Ultime notifiche</h2>
+        <a routerLink="/teacher/notifications" class="small text-decoration-none">Vedi tutte</a>
+      </div>
+      <div class="card-body p-0">
+        @if (notifs().loading) {
+          <p class="text-body-secondary small m-3">Caricamento...</p>
+        } @else if (notifs().error; as err) {
+          <div class="p-3"><app-error-state [message]="err" (retry)="loadNotifs()" /></div>
+        } @else if (notifs().data; as list) {
+          @if (list.length) {
+            <ul class="list-group list-group-flush">
+              @for (n of list.slice(0, 3); track n.id) {
+                <li class="list-group-item d-flex gap-2">
+                  <i class="bi bi-{{ severityIcon(n.severity) }} {{ severityClass(n.severity) }} mt-1" aria-hidden="true"></i>
+                  <div class="flex-grow-1">
+                    <div class="fw-semibold">{{ n.title }}</div>
+                    <div class="small text-body-secondary">{{ n.body }}</div>
+                    <div class="small text-body-secondary">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <app-empty-state icon="bell-slash" message="Nessuna notifica." />
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Azioni rapide -->
+<section aria-label="Azioni rapide" class="mt-4">
+  <h2 class="h6 mb-3">Azioni rapide</h2>
+  <div class="d-flex flex-wrap gap-2">
+    <a routerLink="/teacher/courses" class="btn btn-outline-primary">
+      <i class="bi bi-journals me-2" aria-hidden="true"></i>I miei corsi
+    </a>
+    <a routerLink="/teacher/exams" class="btn btn-outline-primary">
+      <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Calendario appelli
+    </a>
+  </div>
+</section>

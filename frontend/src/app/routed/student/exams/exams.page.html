@@ -1,0 +1,149 @@
+<h1 class="h3 mb-1">Appelli disponibili</h1>
+<p class="text-body-secondary mb-3">Appelli futuri dei corsi a cui sei iscritto. Prenotati o annulla una prenotazione.</p>
+
+@if (state().loading) {
+  <p class="text-body-secondary small mb-0">Caricamento...</p>
+} @else if (state().error; as err) {
+  <app-error-state [message]="err" (retry)="load()" />
+} @else if (data(); as d) {
+
+  @if (notMatriculated()) {
+    <app-empty-state
+      icon="mortarboard"
+      message="Per prenotare gli appelli devi prima immatricolarti."
+      ctaLabel="Immatricolati ora"
+      (cta)="goMatriculation()" />
+  } @else if (registeredCount() === 0) {
+    <app-empty-state
+      icon="journal-x"
+      message="Non sei iscritto a nessun corso."
+      ctaLabel="Vai al catalogo"
+      (cta)="goCatalog()" />
+  } @else {
+
+    @if (isPending()) {
+      <div class="alert alert-warning" role="status">
+        La tua immatricolazione e' in attesa di approvazione. Puoi consultare gli appelli ma non prenotarti.
+      </div>
+    }
+
+    @if (noExams()) {
+      <app-empty-state icon="calendar-x" message="Nessun appello in programma per i tuoi corsi." />
+    } @else {
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-lg-4">
+              <div class="form-floating">
+                <select id="course" class="form-select" (change)="onCourse($event)">
+                  <option value="all" [selected]="courseFilter() === 'all'">Tutti</option>
+                  @for (c of courses(); track c.courseId) {
+                    <option [value]="c.courseId" [selected]="courseFilter() === c.courseId">{{ c.title }}</option>
+                  }
+                </select>
+                <label for="course">Corso</label>
+              </div>
+            </div>
+            <div class="col-12 col-lg-5 d-flex align-items-center">
+              <div class="form-check form-switch mb-0">
+                <input type="checkbox" role="switch" id="bookable" class="form-check-input" [checked]="onlyBookable()" (change)="onOnlyBookable($event)">
+                <label class="form-check-label" for="bookable">Solo non prenotati</label>
+              </div>
+            </div>
+            <div class="col-12 col-lg-3 text-lg-end">
+              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset filtri</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (filteredEmpty()) {
+        <app-empty-state
+          icon="search"
+          message="Nessun appello con questi filtri."
+          ctaLabel="Rimuovi filtri"
+          (cta)="clearFilters()" />
+      } @else {
+
+        <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'appello' : 'appelli' }}</p>
+
+        <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
+          <div class="row g-2">
+            <div class="col-lg-2">Data</div>
+            <div class="col-lg-4">Appello</div>
+            <div class="col-lg-2">Sede</div>
+            <div class="col-lg-2">Stato</div>
+            <div class="col-lg-2"></div>
+          </div>
+        </div>
+
+        <ul class="list-group">
+          @for (ex of filtered(); track ex.id) {
+            <li class="list-group-item">
+              <div class="row g-2 align-items-center">
+                <div class="col-12 col-lg-2">
+                  <div class="d-flex align-items-baseline gap-1">
+                    <span class="fs-4 fw-semibold lh-1">{{ ex.examDate | date:'d' }}</span>
+                    <span class="text-uppercase small">{{ ex.examDate | date:'MMM' }}</span>
+                    <span class="small text-body-secondary">{{ ex.examDate | date:'y' }}</span>
+                  </div>
+                  <div class="small text-body-secondary"><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ ex.examDate | date:'HH:mm' }}</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                  <a [routerLink]="['/student/courses', ex.courseId]" class="fw-semibold text-decoration-none">{{ ex.subjectTitle }}</a>
+                  <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ ex.teacherName }}</div>
+                </div>
+                <div class="col-6 col-lg-2 small">
+                  @if (ex.location) {
+                    <span><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ ex.location }}</span>
+                  } @else {
+                    <span class="text-body-secondary">Sede da definire</span>
+                  }
+                </div>
+                <div class="col-6 col-lg-2 small">
+                  @switch (ex.myStatus) {
+                    @case ('scheduled') {
+                      <span class="text-success-emphasis"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Prenotato</span>
+                    }
+                    @case ('passed') {
+                      <span class="text-success-emphasis"><i class="bi bi-award-fill me-1" aria-hidden="true"></i>Superato @if (ex.grade != null) { {{ ex.grade }}/30 }</span>
+                    }
+                    @case ('failed') {
+                      <span class="text-danger-emphasis"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Non superato</span>
+                    }
+                    @case ('absent') {
+                      <span class="text-body-secondary"><i class="bi bi-dash-circle me-1" aria-hidden="true"></i>Assente</span>
+                    }
+                    @default {
+                      <span class="text-body-secondary"><i class="bi bi-circle me-1" aria-hidden="true"></i>Prenotabile</span>
+                    }
+                  }
+                </div>
+                <div class="col-12 col-lg-2 text-lg-end">
+                  @if (ex.myStatus == null) {
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            [disabled]="isPending() || bookingId() !== null"
+                            [attr.title]="isPending() ? 'Conferma immatricolazione necessaria' : null"
+                            (click)="book(ex)">Prenota</button>
+                  } @else if (ex.myStatus === 'scheduled') {
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            [disabled]="cancelling()"
+                            (click)="askCancel(ex)">Annulla</button>
+                  }
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+}
+
+<ion-alert
+  [isOpen]="confirmOpen()"
+  header="Annullare la prenotazione?"
+  [message]="confirmMessage()"
+  [buttons]="alertButtons"
+  (didDismiss)="confirmOpen.set(false)" />

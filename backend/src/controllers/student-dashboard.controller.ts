@@ -159,6 +159,109 @@ export async function listRegistrations(req: Request, res: Response): Promise<vo
     res.json(result.rows);
 }
 
+export async function availableExams(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+    const studentId = await studentIdOf(req.user.sub);
+
+    const matr = await db.query<{ status: string }>(
+        `SELECT status FROM matriculation
+          WHERE id_student = $1 AND status <> 'withdrawn'
+          ORDER BY (status = 'active') DESC, matriculation_date DESC NULLS LAST
+          LIMIT 1`,
+        [studentId],
+    );
+    const matriculationStatus = matr.rows[0]?.status ?? null;
+
+    const registered = await db.query<{ count: number }>(
+        'SELECT COUNT(*)::int AS count FROM registration WHERE id_student = $1',
+        [studentId],
+    );
+    const registeredCount = registered.rows[0].count;
+
+    const exams = await db.query<{
+        id:           number;
+        courseId:     number;
+        subjectTitle: string;
+        teacherName:  string;
+        examDate:     string;
+        location:     string | null;
+        myStatus:     string | null;
+        grade:        number | null;
+        enrollmentId: number | null;
+    }>(
+        `SELECT ex.id                          AS "id",
+                c.id                           AS "courseId",
+                sub.title                      AS "subjectTitle",
+                tu.name || ' ' || tu.surname   AS "teacherName",
+                ex.exam_date                   AS "examDate",
+                ex.location                    AS "location",
+                (SELECT en.status FROM enrollment en
+                  WHERE en.id_exam = ex.id AND en.id_student = $1 AND en.status <> 'withdrawn'
+                  ORDER BY (en.status = 'scheduled') DESC, en.id DESC LIMIT 1) AS "myStatus",
+                (SELECT en.grade FROM enrollment en
+                  WHERE en.id_exam = ex.id AND en.id_student = $1 AND en.status = 'passed'
+                  LIMIT 1) AS "grade",
+                (SELECT en.id FROM enrollment en
+                  WHERE en.id_exam = ex.id AND en.id_student = $1 AND en.status = 'scheduled'
+                  LIMIT 1) AS "enrollmentId"
+           FROM exam ex
+           JOIN course c    ON c.id = ex.id_course
+           JOIN subject sub ON sub.id = c.id_subject
+           JOIN teacher t   ON t.id = ex.id_teacher
+           JOIN app_user tu ON tu.id = t.id_user
+          WHERE ex.exam_date > now()
+            AND ex.exam_date <= now() + interval '90 days'
+            AND EXISTS (SELECT 1 FROM registration r
+                         WHERE r.id_course = ex.id_course AND r.id_student = $1)
+          ORDER BY ex.exam_date ASC`,
+        [studentId],
+    );
+
+    res.json({ matriculationStatus, registeredCount, exams: exams.rows });
+}
+
+export async function listEnrollments(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+    const studentId = await studentIdOf(req.user.sub);
+
+    const result = await db.query<{
+        id:           number;
+        examId:       number;
+        courseId:     number;
+        subjectTitle: string;
+        teacherName:  string;
+        examDate:     string | null;
+        location:     string | null;
+        status:       string;
+        grade:        number | null;
+        academicYear: number | null;
+        future:       boolean;
+    }>(
+        `SELECT e.id                          AS "id",
+                ex.id                          AS "examId",
+                c.id                           AS "courseId",
+                sub.title                      AS "subjectTitle",
+                tu.name || ' ' || tu.surname   AS "teacherName",
+                ex.exam_date                   AS "examDate",
+                ex.location                    AS "location",
+                e.status                       AS "status",
+                e.grade                        AS "grade",
+                c.academic_year                AS "academicYear",
+                (ex.exam_date > now())         AS "future"
+           FROM enrollment e
+           JOIN exam ex     ON ex.id = e.id_exam
+           JOIN course c    ON c.id = ex.id_course
+           JOIN subject sub ON sub.id = c.id_subject
+           JOIN teacher t   ON t.id = ex.id_teacher
+           JOIN app_user tu ON tu.id = t.id_user
+          WHERE e.id_student = $1
+          ORDER BY ex.exam_date DESC NULLS LAST`,
+        [studentId],
+    );
+
+    res.json(result.rows);
+}
+
 export async function cfuProgress(req: Request, res: Response): Promise<void> {
     if (!req.user) throw new AppError(401, 'Unauthorized');
     const studentId = await studentIdOf(req.user.sub);
@@ -172,9 +275,18 @@ export async function cfuProgress(req: Request, res: Response): Promise<void> {
               WHERE e.id_student = $1 AND e.status = 'passed'
            ), 0)::int AS acquired,
            COALESCE(NULLIF((
-             SELECT SUM(c.cfu) FROM course c
-               JOIN matriculation m ON m.id_degree = c.id_degree
-              WHERE m.id_student = $1
+             SELECT SUM(sp_cfu.cfu) FROM (
+               SELECT (SELECT c.cfu FROM course c
+                         WHERE c.id_subject = sp.id_subject AND c.id_degree = sp.id_degree
+                         ORDER BY c.academic_year DESC NULLS LAST, c.id DESC LIMIT 1) AS cfu
+                 FROM study_plan sp
+                WHERE sp.id_degree = (
+                  SELECT m.id_degree FROM matriculation m
+                   WHERE m.id_student = $1 AND m.status <> 'withdrawn'
+                   ORDER BY (m.status = 'active') DESC, m.matriculation_date DESC NULLS LAST
+                   LIMIT 1
+                )
+             ) sp_cfu
            ), 0), 180)::int AS total,
            (
              SELECT AVG(e.grade) FROM enrollment e
@@ -268,6 +380,107 @@ export async function studyPlan(req: Request, res: Response): Promise<void> {
         matriculationStatus: matr.status,
         cfuAcquired,
         cfuTotal,
+        items,
+    });
+}
+
+export async function transcript(req: Request, res: Response): Promise<void> {
+    if (!req.user) throw new AppError(401, 'Unauthorized');
+    const studentId = await studentIdOf(req.user.sub);
+
+    const headerResult = await db.query<{
+        student_name:       string;
+        matriculation_code: number | null;
+        matriculation_date: Date | string | null;
+        status:             string | null;
+        degree_title:       string | null;
+    }>(
+        `SELECT (u.name || ' ' || u.surname) AS student_name,
+                m.matriculation_code, m.matriculation_date, m.status,
+                d.title AS degree_title
+           FROM app_user u
+           LEFT JOIN LATERAL (
+                SELECT mat.matriculation_code, mat.matriculation_date, mat.status, mat.id_degree
+                  FROM matriculation mat
+                 WHERE mat.id_student = $1 AND mat.status <> 'withdrawn'
+                 ORDER BY (mat.status = 'active') DESC, mat.matriculation_date DESC NULLS LAST
+                 LIMIT 1
+           ) m ON true
+           LEFT JOIN degree d ON d.id = m.id_degree
+          WHERE u.id = $2`,
+        [studentId, req.user.sub],
+    );
+    const header = headerResult.rows[0];
+
+    const itemsResult = await db.query<{
+        enrollmentId: number;
+        courseId:     number;
+        examDate:     string | null;
+        subjectTitle: string;
+        cfu:          number;
+        grade:        number | null;
+        teacherName:  string;
+        academicYear: number | null;
+        location:     string | null;
+    }>(
+        `SELECT e.id                          AS "enrollmentId",
+                c.id                           AS "courseId",
+                ex.exam_date                   AS "examDate",
+                sub.title                      AS "subjectTitle",
+                c.cfu                          AS "cfu",
+                e.grade                        AS "grade",
+                tu.name || ' ' || tu.surname   AS "teacherName",
+                c.academic_year                AS "academicYear",
+                ex.location                    AS "location"
+           FROM enrollment e
+           JOIN exam ex     ON ex.id = e.id_exam
+           JOIN course c    ON c.id = ex.id_course
+           JOIN subject sub ON sub.id = c.id_subject
+           JOIN teacher t   ON t.id = ex.id_teacher
+           JOIN app_user tu ON tu.id = t.id_user
+          WHERE e.id_student = $1 AND e.status = 'passed'
+          ORDER BY ex.exam_date DESC NULLS LAST`,
+        [studentId],
+    );
+    const items = itemsResult.rows;
+
+    const totalResult = await db.query<{ total: number }>(
+        `SELECT COALESCE(SUM(
+            (SELECT c.cfu FROM course c
+              WHERE c.id_subject = sp.id_subject AND c.id_degree = sp.id_degree
+              ORDER BY c.academic_year DESC NULLS LAST, c.id DESC LIMIT 1)
+         ), 0)::int AS total
+           FROM study_plan sp
+          WHERE sp.id_degree = (
+            SELECT id_degree FROM matriculation
+             WHERE id_student = $1 AND status <> 'withdrawn'
+             ORDER BY (status = 'active') DESC, matriculation_date DESC NULLS LAST
+             LIMIT 1
+          )`,
+        [studentId],
+    );
+
+    const cfuAcquired = items.reduce((sum, it) => sum + (it.cfu ?? 0), 0);
+    const graded      = items.filter(it => it.grade != null);
+    const weightCfu   = graded.reduce((sum, it) => sum + (it.cfu ?? 0), 0);
+
+    const averageArithmetic = graded.length
+        ? Math.round((graded.reduce((sum, it) => sum + it.grade!, 0) / graded.length) * 10) / 10
+        : null;
+    const averageWeighted = weightCfu
+        ? Math.round((graded.reduce((sum, it) => sum + it.grade! * (it.cfu ?? 0), 0) / weightCfu) * 100) / 100
+        : null;
+
+    res.json({
+        studentName:         header?.student_name ?? '',
+        matriculationCode:   header?.matriculation_code != null ? String(header.matriculation_code) : null,
+        degreeTitle:         header?.degree_title ?? null,
+        matriculationStatus: header?.status ?? null,
+        academicYear:        academicYearFrom(header?.matriculation_date ?? null),
+        cfuAcquired,
+        cfuTotal:            totalResult.rows[0].total,
+        averageArithmetic,
+        averageWeighted,
         items,
     });
 }

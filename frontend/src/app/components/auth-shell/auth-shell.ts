@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
-import { IonContent, IonActionSheet, ToastController } from '@ionic/angular/standalone';
+import { IonContent, IonActionSheet } from '@ionic/angular/standalone';
 import { AuthService } from '$core/auth/auth.service';
+import { ToastService } from '$core/toast/toast.service';
 
 export interface AuthNavLink {
     label: string;
@@ -51,7 +52,7 @@ interface SheetButton {
 export class AuthShell {
     private readonly router = inject(Router);
     private readonly auth   = inject(AuthService);
-    private readonly toast  = inject(ToastController);
+    private readonly toast  = inject(ToastService);
 
     readonly config = input.required<AuthShellConfig>();
 
@@ -102,14 +103,9 @@ export class AuthShell {
         this.sheetOpen.set(true);
     }
 
-    protected async logout(): Promise<void> {
+    protected logout(): void {
         this.menuOpen.set(false);
-        const toast = await this.toast.create({
-            message: 'Sei uscito',
-            duration: 2500,
-            position: 'top',
-        });
-        await toast.present();
+        this.toast.show('Sei uscito');
         this.auth.logout();
     }
 

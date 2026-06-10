@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { IonAlert, ToastController } from '@ionic/angular/standalone';
+import { IonAlert } from '@ionic/angular/standalone';
 import {
     CourseDetailService,
     CourseDetail,
     CourseExam,
     CourseMaterial,
 } from '$core/services/course-detail.service';
+import { ToastService } from '$core/toast/toast.service';
 import { EmptyState } from '$components/empty-state/empty-state';
 import { ErrorState } from '$components/error-state/error-state';
 
@@ -35,7 +36,7 @@ export class CourseDetailPage {
     private readonly service = inject(CourseDetailService);
     private readonly router  = inject(Router);
     private readonly route   = inject(ActivatedRoute);
-    private readonly toast   = inject(ToastController);
+    private readonly toast   = inject(ToastService);
 
     private readonly id = Number(this.route.snapshot.paramMap.get('id'));
 
@@ -125,12 +126,12 @@ export class CourseDetailPage {
         this.service.register(c.id).subscribe({
             next: () => {
                 this.submitting.set(false);
-                void this.notify('Iscritto al corso.');
+                this.toast.show('Iscritto al corso.');
                 this.loadCourse();
             },
             error: (err: unknown) => {
                 this.submitting.set(false);
-                void this.notify(this.errorMessage(err, 'Iscrizione non riuscita. Riprova.'));
+                this.toast.show(this.errorMessage(err, 'Iscrizione non riuscita. Riprova.'));
                 this.loadCourse();
             },
         });
@@ -147,12 +148,12 @@ export class CourseDetailPage {
         this.service.unregister(c.id).subscribe({
             next: () => {
                 this.submitting.set(false);
-                void this.notify('Iscrizione annullata.');
+                this.toast.show('Iscrizione annullata.');
                 this.loadCourse();
             },
             error: (err: unknown) => {
                 this.submitting.set(false);
-                void this.notify(this.errorMessage(err, 'Operazione non riuscita. Riprova.'));
+                this.toast.show(this.errorMessage(err, 'Operazione non riuscita. Riprova.'));
                 this.loadCourse();
             },
         });
@@ -164,14 +165,21 @@ export class CourseDetailPage {
         this.service.enroll(exam.id).subscribe({
             next: () => {
                 this.bookingId.set(null);
-                void this.notify('Prenotazione registrata.');
+                this.toast.show('Prenotazione registrata.');
                 this.loadExams();
             },
             error: (err: unknown) => {
                 this.bookingId.set(null);
-                void this.notify(this.errorMessage(err, 'Prenotazione non riuscita. Riprova.'));
+                this.toast.show(this.errorMessage(err, 'Prenotazione non riuscita. Riprova.'));
                 this.loadExams();
             },
+        });
+    }
+
+    protected download(material: CourseMaterial): void {
+        this.service.downloadUrl(this.id, material.id).subscribe({
+            next: ({ url }) => window.open(url, '_blank'),
+            error: (err: unknown) => this.toast.show(this.errorMessage(err, 'Download non riuscito. Riprova.')),
         });
     }
 
@@ -188,10 +196,5 @@ export class CourseDetailPage {
             return err.error.error;
         }
         return fallback;
-    }
-
-    private async notify(message: string): Promise<void> {
-        const toast = await this.toast.create({ message, duration: 2500, position: 'top' });
-        await toast.present();
     }
 }

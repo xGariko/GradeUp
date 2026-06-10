@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { guestGuard }   from '$core/guards/guest.guard';
 import { studentGuard } from '$core/guards/student.guard';
 import { teacherGuard } from '$core/guards/teacher.guard';
+import { pendingChangesGuard } from '$core/guards/pending-changes.guard';
 
 export const routes: Routes = [
     {
@@ -55,6 +56,11 @@ export const routes: Routes = [
                 loadComponent: () => import('$routed/student/registrations/registrations.page').then(m => m.RegistrationsPage),
             },
             {
+                path: 'transcript',
+                title: 'Libretto',
+                loadComponent: () => import('$routed/student/transcript/transcript.page').then(m => m.TranscriptPage),
+            },
+            {
                 path: 'courses',
                 title: 'Catalogo corsi',
                 loadComponent: () => import('$routed/student/courses/courses.page').then(m => m.CoursesPage),
@@ -63,6 +69,21 @@ export const routes: Routes = [
                 path: 'courses/:id',
                 title: 'Dettaglio corso',
                 loadComponent: () => import('$routed/student/courses/detail/course-detail.page').then(m => m.CourseDetailPage),
+            },
+            {
+                path: 'exams',
+                title: 'Appelli disponibili',
+                loadComponent: () => import('$routed/student/exams/exams.page').then(m => m.ExamsPage),
+            },
+            {
+                path: 'enrollments',
+                title: 'Le mie prenotazioni',
+                loadComponent: () => import('$routed/student/enrollments/enrollments.page').then(m => m.EnrollmentsPage),
+            },
+            {
+                path: 'notifications',
+                title: 'Notifiche',
+                loadComponent: () => import('$routed/shared/notifications/notifications.page').then(m => m.NotificationsPage),
             },
             {
                 path: 'profile',
@@ -80,7 +101,54 @@ export const routes: Routes = [
         children: [
             {
                 path: 'home',
+                title: 'Home',
                 loadComponent: () => import('$routed/teacher/home/teacher-home.page').then(m => m.TeacherHomePage),
+            },
+            {
+                path: 'courses',
+                title: 'I miei corsi',
+                loadComponent: () => import('$routed/teacher/courses/courses.page').then(m => m.TeacherCoursesPage),
+            },
+            {
+                path: 'courses/:id',
+                title: 'Dettaglio corso',
+                loadComponent: () => import('$routed/teacher/courses/detail/course-detail.page').then(m => m.TeacherCourseDetailPage),
+            },
+            {
+                path: 'courses/:id/archive',
+                title: 'Materiale',
+                loadComponent: () => import('$routed/teacher/courses/detail/archive/archive.page').then(m => m.TeacherArchivePage),
+            },
+            {
+                path: 'courses/:id/exams',
+                title: 'Appelli',
+                loadComponent: () => import('$routed/teacher/courses/detail/exams/exams.page').then(m => m.TeacherCourseExamsPage),
+            },
+            {
+                path: 'exams',
+                title: 'Calendario appelli',
+                loadComponent: () => import('$routed/teacher/exams/exams.page').then(m => m.TeacherExamsPage),
+            },
+            {
+                path: 'grading',
+                title: 'Da verbalizzare',
+                loadComponent: () => import('$routed/teacher/grading/grading.page').then(m => m.TeacherGradingPage),
+            },
+            {
+                path: 'exams/:id/grade',
+                title: 'Verbalizzazione',
+                loadComponent: () => import('$routed/teacher/exams/grade/grade.page').then(m => m.TeacherExamGradePage),
+                canDeactivate: [pendingChangesGuard],
+            },
+            {
+                path: 'notifications',
+                title: 'Notifiche',
+                loadComponent: () => import('$routed/shared/notifications/notifications.page').then(m => m.NotificationsPage),
+            },
+            {
+                path: 'profile',
+                title: 'Profilo',
+                loadComponent: () => import('$routed/teacher/profile/profile.page').then(m => m.TeacherProfilePage),
             },
             { path: '', redirectTo: 'home', pathMatch: 'full' },
         ],
