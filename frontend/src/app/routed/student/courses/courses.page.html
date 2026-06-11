@@ -5,7 +5,7 @@
     icon="mortarboard"
     message="Per sfogliare il catalogo devi prima immatricolarti."
     ctaLabel="Immatricolati ora"
-    (cta)="goMatriculation()" />
+    (cta)="goMatriculation()"/>
 } @else {
 
   <h2 class="h4 mb-3">Catalogo corsi</h2>
@@ -15,7 +15,8 @@
       <div class="row g-2 align-items-center">
         <div class="col-12 col-lg-4">
           <div class="form-floating">
-            <input type="search" id="q" class="form-control" placeholder="Cerca" [value]="q()" (input)="onSearch($event)">
+            <input type="search" id="q" class="form-control" placeholder="Cerca" [value]="q()"
+                   (input)="onSearch($event)">
             <label for="q">Cerca per materia o docente</label>
           </div>
         </div>
@@ -33,14 +34,17 @@
           <div class="form-floating">
             <select id="year" class="form-select" (change)="onYear($event)">
               <option value="" [selected]="year() === ''">Tutti</option>
-              @for (y of years(); track y) { <option [value]="y" [selected]="yearSelected(y)">{{ y }}/{{ y + 1 }}</option> }
+              @for (y of years(); track y) {
+                <option [value]="y" [selected]="yearSelected(y)">{{ y }}/{{ y + 1 }}</option>
+              }
             </select>
             <label for="year">Anno accademico</label>
           </div>
         </div>
         <div class="col-12 col-lg-3 d-flex align-items-center justify-content-between">
           <div class="form-check form-switch mb-0">
-            <input type="checkbox" role="switch" id="mine" class="form-check-input" [checked]="mine()" (change)="onMine($event)">
+            <input type="checkbox" role="switch" id="mine" class="form-check-input" [checked]="mine()"
+                   (change)="onMine($event)">
             <label class="form-check-label" for="mine">Solo del mio piano</label>
           </div>
           <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset</button>
@@ -52,16 +56,16 @@
   @if (courses().loading) {
     <p class="text-body-secondary small mb-0">Caricamento...</p>
   } @else if (courses().error; as err) {
-    <app-error-state [message]="err" (retry)="loadCourses()" />
+    <app-error-state [message]="err" (retry)="loadCourses()"/>
   } @else if (courses().data; as all) {
     @if (!all.length) {
-      <app-empty-state icon="collection" message="Nessun corso disponibile per questo anno accademico." />
+      <app-empty-state icon="collection" message="Nessun corso disponibile per questo anno accademico."/>
     } @else if (!filtered().length) {
       <app-empty-state
         icon="search"
         message="Nessun corso corrisponde ai filtri."
         ctaLabel="Rimuovi filtri"
-        (cta)="clearFilters()" />
+        (cta)="clearFilters()"/>
     } @else {
 
       <p class="text-body-secondary small mb-2">{{ filtered().length }} corsi</p>
@@ -82,25 +86,37 @@
           <li class="list-group-item">
             <div class="row g-2 align-items-center">
               <div class="col-12 col-lg-4">
-                <a [routerLink]="['/student/courses', c.id]" class="fw-semibold text-decoration-none">{{ c.subjectTitle }}</a>
-                @if (c.alreadyRegistered) { <span class="badge text-bg-success ms-2">Iscritto</span> }
-                <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ c.teacherName }}</div>
+                <a [routerLink]="['/student/courses', c.id]"
+                   class="fw-semibold text-decoration-none">{{ c.subjectTitle }}</a>
+                @if (c.alreadyRegistered) {
+                  <span class="badge text-bg-success ms-2">Iscritto</span>
+                }
+                <div class="small text-body-secondary"><i class="bi bi-person me-1"
+                                                          aria-hidden="true"></i>{{ c.teacherName }}
+                </div>
               </div>
               <div class="col-6 col-lg-2">
                 <span class="badge text-bg-light">{{ c.degreeTitle }}</span>
               </div>
               <div class="col-6 col-lg-2 small">
-                @if (c.semester) { <span>Sem. {{ c.semester }}</span> }
-                @if (c.academicYear; as ay) { <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ ay }}/{{ ay + 1 }}</span> }
+                @if (c.semester) {
+                  <span>Sem. {{ c.semester }}</span>
+                }
+                @if (c.academicYear; as ay) {
+                  <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ ay }}/{{ ay + 1 }}</span>
+                }
               </div>
               <div class="col-6 col-lg-1 small">{{ c.cfu }} CFU</div>
               <div class="col-6 col-lg-2 small">
                 @if (seatsLeft(c) === null) {
-                  <span class="text-body-secondary"><i class="bi bi-infinity me-1" aria-hidden="true"></i>Posti liberi</span>
+                  <span class="text-body-secondary"><i class="bi bi-infinity me-1"
+                                                       aria-hidden="true"></i>Posti liberi</span>
                 } @else if (seatsLeft(c)! > 0) {
-                  <span class="text-success-emphasis"><i class="bi bi-person-check me-1" aria-hidden="true"></i>{{ seatsLeft(c) }} posti</span>
+                  <span class="text-success-emphasis"><i class="bi bi-person-check me-1"
+                                                         aria-hidden="true"></i>{{ seatsLeft(c) }} posti</span>
                 } @else {
-                  <span class="text-danger-emphasis"><i class="bi bi-person-x me-1" aria-hidden="true"></i>Esaurito</span>
+                  <span class="text-danger-emphasis"><i class="bi bi-person-x me-1"
+                                                        aria-hidden="true"></i>Esaurito</span>
                 }
               </div>
               <div class="col-12 col-lg-1 text-lg-end">
@@ -115,11 +131,15 @@
         <nav class="mt-3" aria-label="Paginazione catalogo">
           <ul class="pagination justify-content-center mb-0">
             <li class="page-item" [class.disabled]="page() === 1">
-              <button type="button" class="page-link" (click)="goToPage(page() - 1)" [disabled]="page() === 1">Precedente</button>
+              <button type="button" class="page-link" (click)="goToPage(page() - 1)" [disabled]="page() === 1">
+                Precedente
+              </button>
             </li>
             <li class="page-item disabled"><span class="page-link">Pagina {{ page() }} di {{ totalPages() }}</span></li>
             <li class="page-item" [class.disabled]="page() === totalPages()">
-              <button type="button" class="page-link" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()">Successiva</button>
+              <button type="button" class="page-link" (click)="goToPage(page() + 1)"
+                      [disabled]="page() === totalPages()">Successiva
+              </button>
             </li>
           </ul>
         </nav>

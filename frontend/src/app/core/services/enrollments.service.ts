@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { ENROLLMENT_ENDPOINTS } from '$core/api/api.constants';
 import { ExamStatus } from '$core/services/exams.service';
 
 export interface MyEnrollment {
@@ -23,6 +23,6 @@ export class EnrollmentsService {
     private readonly http = inject(HttpClient);
 
     list(): Observable<MyEnrollment[]> {
-        return this.http.get<MyEnrollment[]>(ME_ENDPOINTS.enrollments);
+        return this.http.get<MyEnrollment[]>(ENROLLMENT_ENDPOINTS.enrollments);
     }
 }

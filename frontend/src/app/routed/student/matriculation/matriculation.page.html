@@ -8,7 +8,9 @@
         <div class="form-floating">
           <select class="form-select" id="fType" (change)="onType($event)">
             <option value="">Tutti i tipi</option>
-            @for (t of degreeTypes; track t) { <option [value]="t">{{ typeLabels[t] }}</option> }
+            @for (t of degreeTypes; track t) {
+              <option [value]="t">{{ typeLabels[t] }}</option>
+            }
           </select>
           <label for="fType">Tipo</label>
         </div>
@@ -17,7 +19,9 @@
         <div class="form-floating">
           <select class="form-select" id="fDept" (change)="onDept($event)">
             <option value="">Tutti i dipartimenti</option>
-            @for (d of departments(); track d) { <option [value]="d">{{ d }}</option> }
+            @for (d of departments(); track d) {
+              <option [value]="d">{{ d }}</option>
+            }
           </select>
           <label for="fDept">Dipartimento</label>
         </div>
@@ -26,7 +30,9 @@
         <div class="form-floating">
           <select class="form-select" id="fDur" (change)="onDuration($event)">
             <option value="">Tutte le durate</option>
-            @for (n of durations(); track n) { <option [value]="n">{{ n }} anni</option> }
+            @for (n of durations(); track n) {
+              <option [value]="n">{{ n }} anni</option>
+            }
           </select>
           <label for="fDur">Durata</label>
         </div>
@@ -36,12 +42,12 @@
     @if (degrees().loading) {
       <p class="text-body-secondary small mb-0">Caricamento...</p>
     } @else if (degrees().error; as err) {
-      <app-error-state [message]="err" (retry)="loadDegrees()" />
+      <app-error-state [message]="err" (retry)="loadDegrees()"/>
     } @else if (degrees().data; as all) {
       @if (!all.length) {
-        <app-empty-state icon="mortarboard" message="Nessun corso di laurea aperto per le immatricolazioni." />
+        <app-empty-state icon="mortarboard" message="Nessun corso di laurea aperto per le immatricolazioni."/>
       } @else if (!filtered().length) {
-        <app-empty-state icon="search" message="Nessun corso corrisponde ai filtri." />
+        <app-empty-state icon="search" message="Nessun corso corrisponde ai filtri."/>
       } @else {
         <div class="row g-3">
           @for (d of filtered(); track d.id) {
@@ -68,7 +74,6 @@
       }
     }
   }
-
   @case (2) {
     @if (selected(); as d) {
       <div class="mx-auto" style="max-width: 36rem;">
@@ -107,7 +112,9 @@
               formControlName="academicYear"
               placeholder="AAAA/AAAA">
             <label for="academicYear">Anno accademico</label>
-            @if (fieldError('academicYear'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (fieldError('academicYear'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="form-check mb-3">
@@ -116,7 +123,9 @@
           </div>
 
           <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary" (click)="back()" [disabled]="submitting()">Indietro</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="back()" [disabled]="submitting()">
+              Indietro
+            </button>
             <button type="submit" class="btn btn-primary ms-auto" [disabled]="form.invalid || submitting()">
               @if (submitting()) {
                 <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
@@ -128,7 +137,6 @@
       </div>
     }
   }
-
   @case (3) {
     <div class="mx-auto text-center" style="max-width: 36rem;">
       <i class="bi bi-check-circle text-success-emphasis" style="font-size: 3rem;" aria-hidden="true"></i>

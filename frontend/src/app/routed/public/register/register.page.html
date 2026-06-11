@@ -7,55 +7,87 @@
 
 <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <div class="form-floating mb-3">
-    <input type="text" id="name" class="form-control" [class.is-invalid]="fieldError('name')" formControlName="name" placeholder="Nome" autocomplete="given-name">
+    <input type="text" id="name" class="form-control" [class.is-invalid]="fieldError('name')" formControlName="name"
+           placeholder="Nome" autocomplete="given-name">
     <label for="name">Nome</label>
-    @if (fieldError('name'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
-  </div>
-
-  <div class="form-floating mb-3">
-    <input type="text" id="surname" class="form-control" [class.is-invalid]="fieldError('surname')" formControlName="surname" placeholder="Cognome" autocomplete="family-name">
-    <label for="surname">Cognome</label>
-    @if (fieldError('surname'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
-  </div>
-
-  <div class="form-floating mb-3">
-    <input type="date" id="birthdate" class="form-control" [class.is-invalid]="fieldError('birthdate')" formControlName="birthdate" placeholder="Data di nascita">
-    <label for="birthdate">Data di nascita</label>
-    @if (fieldError('birthdate'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
-  </div>
-
-  <div class="form-floating mb-3">
-    <input type="text" id="taxcode" class="form-control text-uppercase" [class.is-invalid]="fieldError('taxcode')" formControlName="taxcode" placeholder="Codice fiscale" autocapitalize="characters" maxlength="16">
-    <label for="taxcode">Codice fiscale</label>
-    @if (fieldError('taxcode'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
-  </div>
-
-  <div class="form-floating mb-3">
-    <input type="email" id="email" class="form-control" [class.is-invalid]="fieldError('email') || emailTaken()" formControlName="email" placeholder="nome@ateneo.it" autocomplete="email" autocapitalize="off" spellcheck="false">
-    <label for="email">Email</label>
-    @if (fieldError('email'); as msg) {
+    @if (fieldError('name'); as msg) {
       <div class="invalid-feedback d-block">{{ msg }}</div>
-    } @else if (emailTaken()) {
-      <div class="invalid-feedback d-block">Esiste gia' un account con questa email. <a routerLink="/auth/login">Accedi</a></div>
     }
   </div>
 
   <div class="form-floating mb-3">
-    <input type="password" id="password" class="form-control" [class.is-invalid]="fieldError('password')" formControlName="password" placeholder="Password" autocomplete="new-password">
-    <label for="password">Password</label>
-    @if (fieldError('password'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    <input type="text" id="surname" class="form-control" [class.is-invalid]="fieldError('surname')"
+           formControlName="surname" placeholder="Cognome" autocomplete="family-name">
+    <label for="surname">Cognome</label>
+    @if (fieldError('surname'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
   </div>
 
   <div class="form-floating mb-3">
-    <input type="password" id="confirmPassword" class="form-control" [class.is-invalid]="confirmError()" formControlName="confirmPassword" placeholder="Conferma password" autocomplete="new-password">
+    <input type="date" id="birthdate" class="form-control" [class.is-invalid]="fieldError('birthdate')"
+           formControlName="birthdate" placeholder="Data di nascita">
+    <label for="birthdate">Data di nascita</label>
+    @if (fieldError('birthdate'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
+  </div>
+
+  <div class="form-floating mb-3">
+    <input type="text" id="taxcode" class="form-control text-uppercase" [class.is-invalid]="fieldError('taxcode')"
+           formControlName="taxcode" placeholder="Codice fiscale" autocapitalize="characters" maxlength="16">
+    <label for="taxcode">Codice fiscale</label>
+    @if (fieldError('taxcode'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
+  </div>
+
+  <div class="form-floating mb-3">
+    <input type="email"
+           id="email"
+           class="form-control"
+           [class.is-invalid]="fieldError('email') || emailTaken()"
+           formControlName="email"
+           placeholder="nome@ateneo.it"
+           autocomplete="email"
+           autocapitalize="off"
+           spellcheck="false"
+    >
+    <label for="email">Email</label>
+    @if (fieldError('email'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    } @else if (emailTaken()) {
+      <div class="invalid-feedback d-block">Esiste gia' un account con questa email. <a
+        routerLink="/auth/login">Accedi</a></div>
+    }
+  </div>
+
+  <div class="form-floating mb-3">
+    <input type="password" id="password" class="form-control" [class.is-invalid]="fieldError('password')"
+           formControlName="password" placeholder="Password" autocomplete="new-password">
+    <label for="password">Password</label>
+    @if (fieldError('password'); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
+  </div>
+
+  <div class="form-floating mb-3">
+    <input type="password" id="confirmPassword" class="form-control" [class.is-invalid]="confirmError()"
+           formControlName="confirmPassword" placeholder="Conferma password" autocomplete="new-password">
     <label for="confirmPassword">Conferma password</label>
-    @if (confirmError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    @if (confirmError(); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
   </div>
 
   <div class="form-check mb-3">
-    <input type="checkbox" id="acceptTerms" class="form-check-input" [class.is-invalid]="termsError()" formControlName="acceptTerms">
-    <label class="form-check-label small" for="acceptTerms">Accetto i termini di servizio e l'informativa privacy.</label>
-    @if (termsError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+    <input type="checkbox" id="acceptTerms" class="form-check-input" [class.is-invalid]="termsError()"
+           formControlName="acceptTerms">
+    <label class="form-check-label small" for="acceptTerms">Accetto i termini di servizio e l'informativa
+      privacy.</label>
+    @if (termsError(); as msg) {
+      <div class="invalid-feedback d-block">{{ msg }}</div>
+    }
   </div>
 
   <button type="submit" class="btn btn-primary w-100 mt-2" [disabled]="form.invalid || submitting()">

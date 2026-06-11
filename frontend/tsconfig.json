@@ -19,8 +19,7 @@
       "$routed/*":    ["src/app/routed/*"],
       "$components/*":["src/app/components/*"],
       "$core/*":      ["src/app/core/*"],
-      "$shared/*":    ["../shared/src/*"],
-      "zod":          ["node_modules/zod"]
+      "$shared/*":    ["../shared/src/*"]
     }
   },
   "angularCompilerOptions": {

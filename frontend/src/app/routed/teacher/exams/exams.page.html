@@ -48,18 +48,18 @@
 @if (exams().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (exams().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (exams().data; as all) {
   @if (!all.length) {
     <app-empty-state
       icon="calendar-x"
-      message="Non hai ancora creato appelli. Aprili dalla pagina di un corso." />
+      message="Non hai ancora creato appelli. Aprili dalla pagina di un corso."/>
   } @else if (!filtered().length) {
     <app-empty-state
       icon="search"
       message="Nessun appello con questi filtri."
       ctaLabel="Rimuovi filtri"
-      (cta)="clearFilters()" />
+      (cta)="clearFilters()"/>
   } @else {
 
     <p class="text-body-secondary small mb-2">{{ filtered().length }} appelli</p>
@@ -86,7 +86,8 @@
               <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ e.examDate | date:'HH:mm' }}</span>
             </div>
             <div class="col-12 col-lg-3">
-              <a [routerLink]="['/teacher/courses', e.courseId]" class="fw-semibold text-decoration-none">{{ e.courseTitle }}</a>
+              <a [routerLink]="['/teacher/courses', e.courseId]"
+                 class="fw-semibold text-decoration-none">{{ e.courseTitle }}</a>
               @if (e.academicYear; as ay) {
                 <span class="small text-body-secondary d-block">{{ ay }}/{{ ay + 1 }}</span>
               }

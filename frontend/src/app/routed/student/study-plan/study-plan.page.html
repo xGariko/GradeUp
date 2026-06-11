@@ -3,7 +3,7 @@
 @if (state().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (state().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (data(); as plan) {
 
   @if (notMatriculated()) {
@@ -11,7 +11,7 @@
       icon="mortarboard"
       message="Per consultare il piano di studi devi prima immatricolarti."
       ctaLabel="Immatricolati ora"
-      (cta)="goMatriculation()" />
+      (cta)="goMatriculation()"/>
   } @else {
 
     <p class="text-body-secondary mb-3">{{ plan.degreeTitle }}</p>
@@ -41,18 +41,22 @@
     @if (!plan.items.length) {
       <app-empty-state
         icon="journal-x"
-        message="Il piano di studi per questo corso non e' ancora pubblicato. Contatta la segreteria." />
+        message="Il piano di studi per questo corso non e' ancora pubblicato. Contatta la segreteria."/>
     } @else {
 
       <div class="btn-group btn-group-sm mb-3" role="group" aria-label="Filtra materie">
         <button type="button" class="btn btn-outline-secondary" [class.active]="filter() === 'all'"
-                [attr.aria-pressed]="filter() === 'all'" (click)="setFilter('all')">Tutte</button>
+                [attr.aria-pressed]="filter() === 'all'" (click)="setFilter('all')">Tutte
+        </button>
         <button type="button" class="btn btn-outline-secondary" [class.active]="filter() === 'mandatory'"
-                [attr.aria-pressed]="filter() === 'mandatory'" (click)="setFilter('mandatory')">Obbligatorie</button>
+                [attr.aria-pressed]="filter() === 'mandatory'" (click)="setFilter('mandatory')">Obbligatorie
+        </button>
         <button type="button" class="btn btn-outline-secondary" [class.active]="filter() === 'optional'"
-                [attr.aria-pressed]="filter() === 'optional'" (click)="setFilter('optional')">Opzionali</button>
+                [attr.aria-pressed]="filter() === 'optional'" (click)="setFilter('optional')">Opzionali
+        </button>
         <button type="button" class="btn btn-outline-secondary" [class.active]="filter() === 'todo'"
-                [attr.aria-pressed]="filter() === 'todo'" (click)="setFilter('todo')">Da sostenere</button>
+                [attr.aria-pressed]="filter() === 'todo'" (click)="setFilter('todo')">Da sostenere
+        </button>
       </div>
 
       <div class="accordion">
@@ -100,9 +104,11 @@
                         <div class="row g-2 align-items-center">
                           <div class="col-12 col-lg-5">
                             @if (it.courseId) {
-                              <a [routerLink]="['/student/courses', it.courseId]" class="fw-semibold text-decoration-none">{{ it.subjectTitle }}</a>
+                              <a [routerLink]="['/student/courses', it.courseId]"
+                                 class="fw-semibold text-decoration-none">{{ it.subjectTitle }}</a>
                             } @else {
-                              <a [routerLink]="'/student/courses'" [queryParams]="{ q: it.subjectTitle, mine: 'false' }" class="fw-semibold text-decoration-none">{{ it.subjectTitle }}</a>
+                              <a [routerLink]="'/student/courses'" [queryParams]="{ q: it.subjectTitle, mine: 'false' }"
+                                 class="fw-semibold text-decoration-none">{{ it.subjectTitle }}</a>
                             }
                           </div>
                           <div class="col-6 col-lg-2">
@@ -116,10 +122,12 @@
                           <div class="col-6 col-lg-2 small">
                             @switch (it.status) {
                               @case ('passed') {
-                                <span class="text-success-emphasis"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Superato</span>
+                                <span class="text-success-emphasis"><i class="bi bi-check-circle-fill me-1"
+                                                                       aria-hidden="true"></i>Superato</span>
                               }
                               @case ('in_progress') {
-                                <span class="text-warning-emphasis"><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>In corso</span>
+                                <span class="text-warning-emphasis"><i class="bi bi-hourglass-split me-1"
+                                                                       aria-hidden="true"></i>In corso</span>
                               }
                               @default {
                                 <span class="text-body-secondary"><i class="bi bi-circle me-1" aria-hidden="true"></i>Da sostenere</span>

@@ -5,15 +5,16 @@
     icon="clipboard-x"
     message="Appello non trovato o non assegnato a te."
     ctaLabel="Torna ai miei corsi"
-    (cta)="goCourses()" />
+    (cta)="goCourses()"/>
 } @else if (state().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (exam(); as ex) {
 
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb small">
       <li class="breadcrumb-item"><a routerLink="/teacher/courses" class="text-decoration-none">I miei corsi</a></li>
-      <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', ex.courseId, 'exams']" class="text-decoration-none">{{ ex.courseTitle }}</a></li>
+      <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', ex.courseId, 'exams']"
+                                     class="text-decoration-none">{{ ex.courseTitle }}</a></li>
       <li class="breadcrumb-item active" aria-current="page">Verbalizzazione</li>
     </ol>
   </nav>
@@ -22,7 +23,9 @@
     <h1 class="h4 mb-1">Verbalizzazione appello</h1>
     <p class="text-body-secondary mb-3">
       {{ ex.courseTitle }} - {{ ex.examDate | date:'dd/MM/yyyy HH:mm' }}
-      @if (ex.location) { - {{ ex.location }} }
+      @if (ex.location) {
+        - {{ ex.location }}
+      }
     </p>
     <div class="d-flex flex-wrap gap-2">
       <span class="badge text-bg-light border">Iscritti: {{ ex.enrolledCount }}</span>
@@ -32,13 +35,13 @@
   </header>
 
   @if (ex.enrolledCount === 0) {
-    <app-empty-state icon="people" message="Nessuno studente iscritto a questo appello." />
+    <app-empty-state icon="people" message="Nessuno studente iscritto a questo appello."/>
   } @else if (ex.allGraded) {
     <div class="alert alert-secondary d-flex align-items-center gap-2" role="alert">
       <i class="bi bi-check2-circle" aria-hidden="true"></i>
       <span>Appello già verbalizzato. La pagina è in sola lettura.</span>
     </div>
-    <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }" />
+    <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }"/>
   } @else {
 
     @if (saveError(); as se) {
@@ -47,7 +50,7 @@
 
     @if (gradedRows().length) {
       <h2 class="h6 text-body-secondary">Già verbalizzati</h2>
-      <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }" />
+      <ng-container [ngTemplateOutlet]="readonlyList" [ngTemplateOutletContext]="{ rows: gradedRows() }"/>
     }
 
     <h2 class="h6 text-body-secondary mt-4">Da verbalizzare</h2>
@@ -115,15 +118,21 @@
           <button type="button" class="btn btn-primary" [disabled]="submitting()" (click)="confirmSave()">
             {{ submitting() ? 'Verbalizzazione...' : 'Conferma verbalizzazione' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary" [disabled]="submitting()" (click)="dismissSave()">Indietro</button>
+          <button type="button" class="btn btn-outline-secondary" [disabled]="submitting()" (click)="dismissSave()">
+            Indietro
+          </button>
         </div>
       } @else {
         <div class="d-flex flex-wrap align-items-center gap-2">
           <span class="flex-grow-1 text-body-secondary">
             Da salvare: {{ dirtyCount() }} {{ dirtyCount() === 1 ? 'riga modificata' : 'righe modificate' }}.
           </span>
-          <button type="button" class="btn btn-outline-secondary" [disabled]="dirtyCount() === 0" (click)="resetEdits()">Annulla modifiche</button>
-          <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="askSave()">Salva verbalizzazione</button>
+          <button type="button" class="btn btn-outline-secondary" [disabled]="dirtyCount() === 0"
+                  (click)="resetEdits()">Annulla modifiche
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="askSave()">Salva
+            verbalizzazione
+          </button>
         </div>
       }
     </div>
@@ -143,7 +152,9 @@
             <span class="badge {{ statusBadge(row.status) }}">{{ statusLabel(row.status) }}</span>
           </div>
           <div class="col-12 col-md-3 small">
-            @if (row.grade !== null) { Voto: <span class="fw-semibold">{{ row.grade }}</span> }
+            @if (row.grade !== null) {
+              Voto: <span class="fw-semibold">{{ row.grade }}</span>
+            }
           </div>
         </div>
       </li>

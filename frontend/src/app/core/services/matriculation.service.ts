@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type { Degree } from '$shared/types/degree';
 import type { Matriculation } from '$shared/types/matriculation';
-import { DEGREE_ENDPOINTS, ME_ENDPOINTS } from '$core/api/api.constants';
+import { DEGREE_ENDPOINTS, ENROLLMENT_ENDPOINTS } from '$core/api/api.constants';
 
 export interface MatriculationRequest {
     id_degree:     number;
@@ -20,6 +20,6 @@ export class MatriculationService {
     }
 
     matriculate(request: MatriculationRequest): Observable<Matriculation> {
-        return this.http.post<Matriculation>(ME_ENDPOINTS.matriculations, request);
+        return this.http.post<Matriculation>(ENROLLMENT_ENDPOINTS.matriculations, request);
     }
 }

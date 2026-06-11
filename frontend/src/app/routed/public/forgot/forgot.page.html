@@ -2,12 +2,14 @@
   <div class="text-center">
     <i class="bi bi-envelope-check fs-1 text-body-secondary d-inline-block mb-3" aria-hidden="true"></i>
     <h1 class="h3 mb-2">Controlla la tua email</h1>
-    <p class="text-body-secondary">Se l'indirizzo e' associato a un account, e' stato inviato un link per il reset. Controlla anche la cartella spam.</p>
+    <p class="text-body-secondary">Se l'indirizzo e' associato a un account, e' stato inviato un link per il reset.
+      Controlla anche la cartella spam.</p>
     <a routerLink="/auth/login" class="btn btn-primary mt-2">Torna al login</a>
   </div>
 } @else {
   <h1 class="h3 mb-1">Recupera password</h1>
-  <p class="text-body-secondary mb-4">Inserisci l'email del tuo account: verra' inviato un link per impostare una nuova password.</p>
+  <p class="text-body-secondary mb-4">Inserisci l'email del tuo account: verra' inviato un link per impostare una nuova
+    password.</p>
 
   @if (errorBanner(); as msg) {
     <div class="alert alert-danger" role="alert">{{ msg }}</div>
@@ -26,7 +28,9 @@
         autocapitalize="off"
         spellcheck="false">
       <label for="email">Email</label>
-      @if (fieldError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+      @if (fieldError(); as msg) {
+        <div class="invalid-feedback d-block">{{ msg }}</div>
+      }
     </div>
 
     <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || submitting()">

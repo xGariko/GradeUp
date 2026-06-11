@@ -4,7 +4,7 @@
 @if (state().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (state().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (data(); as regs) {
 
   @if (isEmpty()) {
@@ -12,7 +12,7 @@
       icon="journal-x"
       message="Non sei iscritto a nessun corso."
       ctaLabel="Vai al catalogo"
-      (cta)="goCatalog()" />
+      (cta)="goCatalog()"/>
   } @else {
 
     <div class="card mb-3">
@@ -40,7 +40,9 @@
             </div>
           </div>
           <div class="col-12 col-lg-6 text-lg-end">
-            <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset filtri</button>
+            <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset
+              filtri
+            </button>
           </div>
         </div>
       </div>
@@ -51,10 +53,11 @@
         icon="search"
         message="Nessuna iscrizione per questi filtri."
         ctaLabel="Rimuovi filtri"
-        (cta)="clearFilters()" />
+        (cta)="clearFilters()"/>
     } @else {
 
-      <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'iscrizione' : 'iscrizioni' }}</p>
+      <p
+        class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'iscrizione' : 'iscrizioni' }}</p>
 
       <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
         <div class="row g-2">
@@ -71,22 +74,30 @@
           <li class="list-group-item fade" [class.show]="!isRemoving(r)">
             <div class="row g-2 align-items-center">
               <div class="col-12 col-lg-4">
-                <a [routerLink]="['/student/courses', r.courseId]" class="fw-semibold text-decoration-none">{{ r.subjectTitle }}</a>
-                @if (isReadonly(r)) { <span class="badge text-bg-light ms-2">Storica</span> }
+                <a [routerLink]="['/student/courses', r.courseId]"
+                   class="fw-semibold text-decoration-none">{{ r.subjectTitle }}</a>
+                @if (isReadonly(r)) {
+                  <span class="badge text-bg-light ms-2">Storica</span>
+                }
                 <div class="small text-body-secondary">
                   <i class="bi bi-person me-1" aria-hidden="true"></i>{{ r.teacherName }}
                   <span class="badge text-bg-light ms-1">{{ r.degreeTitle }}</span>
                 </div>
               </div>
               <div class="col-6 col-lg-2 small">
-                @if (r.semester) { <span>Sem. {{ r.semester }}</span> }
-                @if (r.academicYear; as ay) { <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ ay }}/{{ ay + 1 }}</span> }
+                @if (r.semester) {
+                  <span>Sem. {{ r.semester }}</span>
+                }
+                @if (r.academicYear; as ay) {
+                  <span class="text-body-secondary d-block d-lg-inline ms-lg-1">{{ ay }}/{{ ay + 1 }}</span>
+                }
               </div>
               <div class="col-6 col-lg-1 small">{{ r.cfu }} CFU</div>
               <div class="col-12 col-lg-3 small">
                 @if (r.futureExams > 0) {
                   <a [routerLink]="['/student/courses', r.courseId]" class="text-decoration-none">
-                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ r.futureExams }} {{ r.futureExams === 1 ? 'appello disponibile' : 'appelli disponibili' }}
+                    <i class="bi bi-calendar-event me-1"
+                       aria-hidden="true"></i>{{ r.futureExams }} {{ r.futureExams === 1 ? 'appello disponibile' : 'appelli disponibili' }}
                   </a>
                 } @else {
                   <span class="text-body-secondary"><i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Nessun appello in programma</span>
@@ -95,7 +106,8 @@
               <div class="col-12 col-lg-2 d-flex gap-2 justify-content-lg-end">
                 <a [routerLink]="['/student/courses', r.courseId]" class="btn btn-sm btn-outline-primary">Apri</a>
                 @if (!isReadonly(r)) {
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askUnregister(r)">Disiscriviti</button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askUnregister(r)">Disiscriviti
+                  </button>
                 }
               </div>
             </div>
@@ -111,4 +123,4 @@
   header="Annullare l'iscrizione?"
   [message]="confirmMessage()"
   [buttons]="alertButtons"
-  (didDismiss)="confirmOpen.set(false)" />
+  (didDismiss)="confirmOpen.set(false)"/>

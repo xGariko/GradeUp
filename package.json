@@ -1,0 +1,13 @@
+{
+  "name": "gradeup",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  }
+}

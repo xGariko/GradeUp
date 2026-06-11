@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { TEACHER_ENDPOINTS } from '$core/api/api.constants';
 
 export interface TeacherCourse {
     id:           number;
@@ -126,63 +126,63 @@ export class TeacherCoursesService {
     private readonly http = inject(HttpClient);
 
     list(): Observable<TeacherCourse[]> {
-        return this.http.get<TeacherCourse[]>(ME_ENDPOINTS.teacherCoursesList);
+        return this.http.get<TeacherCourse[]>(TEACHER_ENDPOINTS.teacherCoursesList);
     }
 
     detail(id: number): Observable<TeacherCourseDetail> {
-        return this.http.get<TeacherCourseDetail>(ME_ENDPOINTS.teacherCourseDetail(id));
+        return this.http.get<TeacherCourseDetail>(TEACHER_ENDPOINTS.teacherCourseDetail(id));
     }
 
     materials(courseId: number): Observable<CourseArchive> {
-        return this.http.get<CourseArchive>(ME_ENDPOINTS.teacherArchive(courseId));
+        return this.http.get<CourseArchive>(TEACHER_ENDPOINTS.teacherArchive(courseId));
     }
 
     uploadMaterial(courseId: number, file: File): Observable<HttpEvent<{ id: number }>> {
         const form = new FormData();
         form.append('file', file);
-        return this.http.post<{ id: number }>(ME_ENDPOINTS.teacherArchive(courseId), form, {
+        return this.http.post<{ id: number }>(TEACHER_ENDPOINTS.teacherArchive(courseId), form, {
             reportProgress: true,
             observe: 'events',
         });
     }
 
     renameMaterial(id: number, title: string): Observable<void> {
-        return this.http.patch<void>(ME_ENDPOINTS.coursewareRename(id), { title });
+        return this.http.patch<void>(TEACHER_ENDPOINTS.coursewareRename(id), { title });
     }
 
     removeMaterial(id: number): Observable<void> {
-        return this.http.delete<void>(ME_ENDPOINTS.coursewareRemove(id));
+        return this.http.delete<void>(TEACHER_ENDPOINTS.coursewareRemove(id));
     }
 
     downloadUrl(id: number): Observable<{ url: string }> {
-        return this.http.get<{ url: string }>(ME_ENDPOINTS.coursewareDownload(id));
+        return this.http.get<{ url: string }>(TEACHER_ENDPOINTS.coursewareDownload(id));
     }
 
     allExams(): Observable<TeacherExamListItem[]> {
-        return this.http.get<TeacherExamListItem[]>(ME_ENDPOINTS.teacherExamsList);
+        return this.http.get<TeacherExamListItem[]>(TEACHER_ENDPOINTS.teacherExamsList);
     }
 
     courseExams(courseId: number): Observable<CourseExams> {
-        return this.http.get<CourseExams>(ME_ENDPOINTS.teacherCourseExams(courseId));
+        return this.http.get<CourseExams>(TEACHER_ENDPOINTS.teacherCourseExams(courseId));
     }
 
     createExam(courseId: number, payload: ExamPayload): Observable<{ id: number }> {
-        return this.http.post<{ id: number }>(ME_ENDPOINTS.teacherCourseExams(courseId), payload);
+        return this.http.post<{ id: number }>(TEACHER_ENDPOINTS.teacherCourseExams(courseId), payload);
     }
 
     updateExam(id: number, payload: ExamPayload): Observable<void> {
-        return this.http.patch<void>(ME_ENDPOINTS.examUpdate(id), payload);
+        return this.http.patch<void>(TEACHER_ENDPOINTS.examUpdate(id), payload);
     }
 
     cancelExam(id: number): Observable<void> {
-        return this.http.delete<void>(ME_ENDPOINTS.examCancel(id));
+        return this.http.delete<void>(TEACHER_ENDPOINTS.examCancel(id));
     }
 
     examGrading(id: number): Observable<ExamGrading> {
-        return this.http.get<ExamGrading>(ME_ENDPOINTS.examGrading(id));
+        return this.http.get<ExamGrading>(TEACHER_ENDPOINTS.examGrading(id));
     }
 
     saveGrading(id: number, items: GradingItem[]): Observable<{ ok: true; updated: number }> {
-        return this.http.post<{ ok: true; updated: number }>(ME_ENDPOINTS.examGrading(id), { items });
+        return this.http.post<{ ok: true; updated: number }>(TEACHER_ENDPOINTS.examGrading(id), { items });
     }
 }

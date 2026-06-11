@@ -4,7 +4,7 @@
 @if (state().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (state().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (state().data; as items) {
 
   <div class="row g-2 align-items-center mb-3">
@@ -31,9 +31,9 @@
 
   @if (current().length === 0) {
     @if (tab() === 'unread') {
-      <app-empty-state icon="check2-circle" message="Sei in pari. Non hai notifiche da leggere." />
+      <app-empty-state icon="check2-circle" message="Sei in pari. Non hai notifiche da leggere."/>
     } @else {
-      <app-empty-state icon="bell-slash" message="Nessuna notifica." />
+      <app-empty-state icon="bell-slash" message="Nessuna notifica."/>
     }
   } @else {
 
@@ -45,10 +45,13 @@
             <div class="flex-grow-1">
               <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                 <span [class.fw-semibold]="!n.read">{{ n.title }}</span>
-                @if (!n.read) { <span class="badge text-bg-primary">Nuova</span> }
+                @if (!n.read) {
+                  <span class="badge text-bg-primary">Nuova</span>
+                }
               </div>
               <p class="mb-1 small text-break" [class.text-body-secondary]="n.read">{{ n.body }}</p>
-              <span class="small text-body-secondary" [title]="n.createdAt | date:'dd/MM/yyyy HH:mm'">{{ relative(n.createdAt) }}</span>
+              <span class="small text-body-secondary"
+                    [title]="n.createdAt | date:'dd/MM/yyyy HH:mm'">{{ relative(n.createdAt) }}</span>
             </div>
             @if (!n.read) {
               <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0"

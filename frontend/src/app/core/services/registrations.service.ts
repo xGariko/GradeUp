@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { ENROLLMENT_ENDPOINTS } from '$core/api/api.constants';
 
 export interface MyRegistration {
     courseId:         number;
@@ -20,10 +20,10 @@ export class RegistrationsService {
     private readonly http = inject(HttpClient);
 
     list(): Observable<MyRegistration[]> {
-        return this.http.get<MyRegistration[]>(ME_ENDPOINTS.registrations);
+        return this.http.get<MyRegistration[]>(ENROLLMENT_ENDPOINTS.registrations);
     }
 
     unregister(courseId: number): Observable<{ ok: boolean }> {
-        return this.http.delete<{ ok: boolean }>(ME_ENDPOINTS.registration(courseId));
+        return this.http.delete<{ ok: boolean }>(ENROLLMENT_ENDPOINTS.registration(courseId));
     }
 }

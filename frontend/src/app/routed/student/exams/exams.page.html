@@ -1,10 +1,11 @@
 <h1 class="h3 mb-1">Appelli disponibili</h1>
-<p class="text-body-secondary mb-3">Appelli futuri dei corsi a cui sei iscritto. Prenotati o annulla una prenotazione.</p>
+<p class="text-body-secondary mb-3">Appelli futuri dei corsi a cui sei iscritto. Prenotati o annulla una
+  prenotazione.</p>
 
 @if (state().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (state().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (data(); as d) {
 
   @if (notMatriculated()) {
@@ -12,13 +13,13 @@
       icon="mortarboard"
       message="Per prenotare gli appelli devi prima immatricolarti."
       ctaLabel="Immatricolati ora"
-      (cta)="goMatriculation()" />
+      (cta)="goMatriculation()"/>
   } @else if (registeredCount() === 0) {
     <app-empty-state
       icon="journal-x"
       message="Non sei iscritto a nessun corso."
       ctaLabel="Vai al catalogo"
-      (cta)="goCatalog()" />
+      (cta)="goCatalog()"/>
   } @else {
 
     @if (isPending()) {
@@ -28,7 +29,7 @@
     }
 
     @if (noExams()) {
-      <app-empty-state icon="calendar-x" message="Nessun appello in programma per i tuoi corsi." />
+      <app-empty-state icon="calendar-x" message="Nessun appello in programma per i tuoi corsi."/>
     } @else {
 
       <div class="card mb-3">
@@ -47,12 +48,15 @@
             </div>
             <div class="col-12 col-lg-5 d-flex align-items-center">
               <div class="form-check form-switch mb-0">
-                <input type="checkbox" role="switch" id="bookable" class="form-check-input" [checked]="onlyBookable()" (change)="onOnlyBookable($event)">
+                <input type="checkbox" role="switch" id="bookable" class="form-check-input" [checked]="onlyBookable()"
+                       (change)="onOnlyBookable($event)">
                 <label class="form-check-label" for="bookable">Solo non prenotati</label>
               </div>
             </div>
             <div class="col-12 col-lg-3 text-lg-end">
-              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset filtri</button>
+              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="clearFilters()">Reset
+                filtri
+              </button>
             </div>
           </div>
         </div>
@@ -63,10 +67,11 @@
           icon="search"
           message="Nessun appello con questi filtri."
           ctaLabel="Rimuovi filtri"
-          (cta)="clearFilters()" />
+          (cta)="clearFilters()"/>
       } @else {
 
-        <p class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'appello' : 'appelli' }}</p>
+        <p
+          class="text-body-secondary small mb-2">{{ filtered().length }} {{ filtered().length === 1 ? 'appello' : 'appelli' }}</p>
 
         <div class="d-none d-lg-block px-3 pb-1 small fw-semibold text-body-secondary">
           <div class="row g-2">
@@ -88,11 +93,16 @@
                     <span class="text-uppercase small">{{ ex.examDate | date:'MMM' }}</span>
                     <span class="small text-body-secondary">{{ ex.examDate | date:'y' }}</span>
                   </div>
-                  <div class="small text-body-secondary"><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ ex.examDate | date:'HH:mm' }}</div>
+                  <div class="small text-body-secondary"><i class="bi bi-clock me-1"
+                                                            aria-hidden="true"></i>{{ ex.examDate | date:'HH:mm' }}
+                  </div>
                 </div>
                 <div class="col-12 col-lg-4">
-                  <a [routerLink]="['/student/courses', ex.courseId]" class="fw-semibold text-decoration-none">{{ ex.subjectTitle }}</a>
-                  <div class="small text-body-secondary"><i class="bi bi-person me-1" aria-hidden="true"></i>{{ ex.teacherName }}</div>
+                  <a [routerLink]="['/student/courses', ex.courseId]"
+                     class="fw-semibold text-decoration-none">{{ ex.subjectTitle }}</a>
+                  <div class="small text-body-secondary"><i class="bi bi-person me-1"
+                                                            aria-hidden="true"></i>{{ ex.teacherName }}
+                  </div>
                 </div>
                 <div class="col-6 col-lg-2 small">
                   @if (ex.location) {
@@ -104,10 +114,13 @@
                 <div class="col-6 col-lg-2 small">
                   @switch (ex.myStatus) {
                     @case ('scheduled') {
-                      <span class="text-success-emphasis"><i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Prenotato</span>
+                      <span class="text-success-emphasis"><i class="bi bi-check-circle-fill me-1"
+                                                             aria-hidden="true"></i>Prenotato</span>
                     }
                     @case ('passed') {
-                      <span class="text-success-emphasis"><i class="bi bi-award-fill me-1" aria-hidden="true"></i>Superato @if (ex.grade != null) { {{ ex.grade }}/30 }</span>
+                      <span class="text-success-emphasis"><i class="bi bi-award-fill me-1" aria-hidden="true"></i>Superato @if (ex.grade != null) {
+                        {{ ex.grade }}/30
+                      }</span>
                     }
                     @case ('failed') {
                       <span class="text-danger-emphasis"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Non superato</span>
@@ -125,11 +138,13 @@
                     <button type="button" class="btn btn-sm btn-outline-primary"
                             [disabled]="isPending() || bookingId() !== null"
                             [attr.title]="isPending() ? 'Conferma immatricolazione necessaria' : null"
-                            (click)="book(ex)">Prenota</button>
+                            (click)="book(ex)">Prenota
+                    </button>
                   } @else if (ex.myStatus === 'scheduled') {
                     <button type="button" class="btn btn-sm btn-outline-danger"
                             [disabled]="cancelling()"
-                            (click)="askCancel(ex)">Annulla</button>
+                            (click)="askCancel(ex)">Annulla
+                    </button>
                   }
                 </div>
               </div>
@@ -146,4 +161,4 @@
   header="Annullare la prenotazione?"
   [message]="confirmMessage()"
   [buttons]="alertButtons"
-  (didDismiss)="confirmOpen.set(false)" />
+  (didDismiss)="confirmOpen.set(false)"/>

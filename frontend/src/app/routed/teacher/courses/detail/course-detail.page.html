@@ -9,9 +9,9 @@
     icon="journal-x"
     message="Corso non trovato. Potrebbe non esistere o non essere assegnato a te."
     ctaLabel="Torna ai miei corsi"
-    (cta)="goCourses()" />
+    (cta)="goCourses()"/>
 } @else if (detail().error; as err) {
-  <app-error-state [message]="err" (retry)="loadDetail()" />
+  <app-error-state [message]="err" (retry)="loadDetail()"/>
 } @else if (course(); as c) {
 
   <!-- Header -->
@@ -19,8 +19,12 @@
     <h1 class="h3 mb-1">{{ c.subjectTitle }}</h1>
     <p class="text-body-secondary mb-2">
       {{ c.degreeTitle }}
-      @if (c.academicYear; as ay) { <span class="ms-2">{{ ay }}/{{ ay + 1 }}</span> }
-      @if (c.semester) { <span class="ms-2">- {{ c.semester }}° semestre</span> }
+      @if (c.academicYear; as ay) {
+        <span class="ms-2">{{ ay }}/{{ ay + 1 }}</span>
+      }
+      @if (c.semester) {
+        <span class="ms-2">- {{ c.semester }}° semestre</span>
+      }
     </p>
     <div class="d-flex flex-wrap gap-2">
       <span class="badge text-bg-light">{{ c.cfu }} CFU</span>
@@ -68,31 +72,33 @@
     <div class="col-12 col-lg-8">
       <div class="card h-100">
         <div class="card-header bg-transparent">
-          <h2 class="h6 mb-0">Iscritti <span class="text-body-secondary fw-normal">({{ filteredStudents().length }})</span></h2>
+          <h2 class="h6 mb-0">Iscritti <span class="text-body-secondary fw-normal">({{ filteredStudents().length }}
+            )</span></h2>
         </div>
         <div class="card-body p-0">
           @if (!(detail().data?.students)?.length) {
-            <app-empty-state icon="people" message="Nessun iscritto al corso al momento." />
+            <app-empty-state icon="people" message="Nessun iscritto al corso al momento."/>
           } @else {
             <div class="p-3 border-bottom">
               <div class="form-floating">
-                <input type="search" id="q" class="form-control" placeholder="Filtra" [value]="q()" (input)="onSearch($event)">
+                <input type="search" id="q" class="form-control" placeholder="Filtra" [value]="q()"
+                       (input)="onSearch($event)">
                 <label for="q">Filtra per cognome o matricola</label>
               </div>
             </div>
             @if (!filteredStudents().length) {
-              <app-empty-state icon="search" message="Nessun iscritto corrisponde al filtro." />
+              <app-empty-state icon="search" message="Nessun iscritto corrisponde al filtro."/>
             } @else {
               <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                   <thead>
-                    <tr>
-                      <th scope="col">Cognome</th>
-                      <th scope="col">Nome</th>
-                      <th scope="col">Matricola</th>
-                      <th scope="col">Iscrizione</th>
-                      <th scope="col">Stato</th>
-                    </tr>
+                  <tr>
+                    <th scope="col">Cognome</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Matricola</th>
+                    <th scope="col">Iscrizione</th>
+                    <th scope="col">Stato</th>
+                  </tr>
                   </thead>
                   <tbody>
                     @for (s of filteredStudents(); track trackStudent(s)) {
@@ -101,7 +107,9 @@
                         <td>{{ s.name }}</td>
                         <td>{{ s.matriculationCode ?? '-' }}</td>
                         <td>{{ s.registrationDate ? (s.registrationDate | date:'dd/MM/yyyy') : '-' }}</td>
-                        <td><span class="badge {{ statusBadge(s.studentStatus) }}">{{ statusLabel(s.studentStatus) }}</span></td>
+                        <td><span
+                          class="badge {{ statusBadge(s.studentStatus) }}">{{ statusLabel(s.studentStatus) }}</span>
+                        </td>
                       </tr>
                     }
                   </tbody>

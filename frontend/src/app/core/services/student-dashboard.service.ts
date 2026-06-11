@@ -7,25 +7,25 @@ import type {
     StudentCurrentCourse,
     StudentCfuProgress,
 } from '$shared/types/dashboard';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { CAREER_ENDPOINTS } from '$core/api/api.constants';
 
 @Injectable({ providedIn: 'root' })
 export class StudentDashboardService {
     private readonly http = inject(HttpClient);
 
     careerSummary(): Observable<StudentCareerSummary> {
-        return this.http.get<StudentCareerSummary>(ME_ENDPOINTS.careerSummary);
+        return this.http.get<StudentCareerSummary>(CAREER_ENDPOINTS.careerSummary);
     }
 
     upcomingExams(): Observable<StudentUpcomingExam[]> {
-        return this.http.get<StudentUpcomingExam[]>(ME_ENDPOINTS.upcomingExams);
+        return this.http.get<StudentUpcomingExam[]>(CAREER_ENDPOINTS.upcomingExams);
     }
 
     currentRegistrations(): Observable<StudentCurrentCourse[]> {
-        return this.http.get<StudentCurrentCourse[]>(ME_ENDPOINTS.currentRegistrations);
+        return this.http.get<StudentCurrentCourse[]>(CAREER_ENDPOINTS.currentRegistrations);
     }
 
     cfuProgress(): Observable<StudentCfuProgress> {
-        return this.http.get<StudentCfuProgress>(ME_ENDPOINTS.cfuProgress);
+        return this.http.get<StudentCfuProgress>(CAREER_ENDPOINTS.cfuProgress);
     }
 }

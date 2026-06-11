@@ -7,22 +7,31 @@ export const AUTH_ENDPOINTS = {
     reset:    `${API_BASE}/auth/reset`,
 } as const;
 
-export const ME_ENDPOINTS = {
-    me:                   `${API_BASE}/me`,
-    profile:              `${API_BASE}/me/profile`,
-    changePassword:       `${API_BASE}/me/change-password`,
+export const ACCOUNT_ENDPOINTS = {
+    me:             `${API_BASE}/me`,
+    profile:        `${API_BASE}/me/profile`,
+    changePassword: `${API_BASE}/me/change-password`,
+} as const;
+
+export const CAREER_ENDPOINTS = {
     careerSummary:        `${API_BASE}/me/career-summary`,
     studyPlan:            `${API_BASE}/me/study-plan`,
     transcript:           `${API_BASE}/me/transcript`,
     upcomingExams:        `${API_BASE}/me/upcoming-exams`,
-    availableExams:       `${API_BASE}/me/exams`,
     currentRegistrations: `${API_BASE}/me/current-registrations`,
     cfuProgress:          `${API_BASE}/me/cfu-progress`,
-    matriculations:       `${API_BASE}/me/matriculations`,
-    registrations:        `${API_BASE}/me/registrations`,
-    registration:         (courseId: number) => `${API_BASE}/me/registrations/${courseId}`,
-    enrollments:          `${API_BASE}/me/enrollments`,
-    enrollmentWithdraw:   (id: number) => `${API_BASE}/me/enrollments/${id}/withdraw`,
+} as const;
+
+export const ENROLLMENT_ENDPOINTS = {
+    availableExams:     `${API_BASE}/me/exams`,
+    matriculations:     `${API_BASE}/me/matriculations`,
+    registrations:      `${API_BASE}/me/registrations`,
+    registration:       (courseId: number) => `${API_BASE}/me/registrations/${courseId}`,
+    enrollments:        `${API_BASE}/me/enrollments`,
+    enrollmentWithdraw: (id: number) => `${API_BASE}/me/enrollments/${id}/withdraw`,
+} as const;
+
+export const TEACHER_ENDPOINTS = {
     teacherProfile:       `${API_BASE}/me/teacher-profile`,
     teacherCourses:       `${API_BASE}/me/teacher-courses`,
     teacherUpcomingExams: `${API_BASE}/me/teacher-upcoming-exams`,

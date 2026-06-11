@@ -1,7 +1,8 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb small">
     <li class="breadcrumb-item"><a routerLink="/teacher/courses" class="text-decoration-none">I miei corsi</a></li>
-    <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', courseId]" class="text-decoration-none">{{ archive().data?.courseTitle ?? 'Corso' }}</a></li>
+    <li class="breadcrumb-item"><a [routerLink]="['/teacher/courses', courseId]"
+                                   class="text-decoration-none">{{ archive().data?.courseTitle ?? 'Corso' }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">Materiale</li>
   </ol>
 </nav>
@@ -13,9 +14,9 @@
     icon="folder-x"
     message="Corso non trovato o non assegnato a te."
     ctaLabel="Torna ai miei corsi"
-    (cta)="load()" />
+    (cta)="load()"/>
 } @else if (archive().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else {
 
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
@@ -24,7 +25,7 @@
       <p class="text-body-secondary small mb-0">{{ items().length }} file - {{ humanSize(totalSize()) }} totali</p>
     </div>
     <div>
-      <input #fileInput type="file" multiple hidden (change)="onPick($event)" />
+      <input #fileInput type="file" multiple hidden (change)="onPick($event)"/>
       <button type="button" class="btn btn-primary" (click)="fileInput.click()">
         <i class="bi bi-upload me-2" aria-hidden="true"></i>Carica file
       </button>
@@ -70,13 +71,15 @@
             } @else if (u.status === 'error') {
               <span class="small text-danger-emphasis">{{ u.error }}</span>
               <button type="button" class="btn btn-sm btn-outline-primary" (click)="retry(u)">Riprova</button>
-              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="dismissUpload(u.tempId)" aria-label="Rimuovi">
+              <button type="button" class="btn btn-sm btn-link text-decoration-none" (click)="dismissUpload(u.tempId)"
+                      aria-label="Rimuovi">
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
               </button>
             }
           </div>
           @if (u.status === 'uploading') {
-            <div class="progress mt-2" role="progressbar" [attr.aria-valuenow]="u.progress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress mt-2" role="progressbar" [attr.aria-valuenow]="u.progress" aria-valuemin="0"
+                 aria-valuemax="100">
               <div class="progress-bar" [style.width.%]="u.progress"></div>
             </div>
           }
@@ -99,9 +102,9 @@
         icon="cloud-arrow-up"
         message="Nessun file caricato. Trascina qui i file o usa Carica file."
         ctaLabel="Carica primo file"
-        (cta)="fileInput.click()" />
+        (cta)="fileInput.click()"/>
     } @else if (!filtered().length) {
-      <app-empty-state icon="search" message="Nessun file corrisponde ai filtri." />
+      <app-empty-state icon="search" message="Nessun file corrisponde ai filtri."/>
     } @else {
       <ul class="list-group list-group-flush">
         @for (item of filtered(); track item.id) {
@@ -141,17 +144,21 @@
                 <div class="d-flex align-items-center gap-2">
                   <span class="small">Eliminare definitivamente?</span>
                   <button type="button" class="btn btn-sm btn-danger" (click)="confirmDelete(item)">Elimina</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelDelete()">Annulla</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelDelete()">Annulla
+                  </button>
                 </div>
               } @else if (editingId() !== item.id) {
                 <div class="d-flex align-items-center gap-1">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(item)" aria-label="Scarica">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="download(item)"
+                          aria-label="Scarica">
                     <i class="bi bi-download" aria-hidden="true"></i>
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startRename(item)" aria-label="Rinomina">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startRename(item)"
+                          aria-label="Rinomina">
                     <i class="bi bi-pencil" aria-hidden="true"></i>
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askDelete(item.id)" aria-label="Elimina">
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="askDelete(item.id)"
+                          aria-label="Elimina">
                     <i class="bi bi-trash" aria-hidden="true"></i>
                   </button>
                 </div>

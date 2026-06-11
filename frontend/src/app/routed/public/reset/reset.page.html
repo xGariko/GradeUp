@@ -30,7 +30,9 @@
         placeholder="Nuova password"
         autocomplete="new-password">
       <label for="password">Nuova password</label>
-      @if (fieldError('password'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+      @if (fieldError('password'); as msg) {
+        <div class="invalid-feedback d-block">{{ msg }}</div>
+      }
     </div>
 
     <div class="form-floating mb-3">
@@ -43,7 +45,9 @@
         placeholder="Conferma password"
         autocomplete="new-password">
       <label for="confirmPassword">Conferma password</label>
-      @if (confirmError(); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+      @if (confirmError(); as msg) {
+        <div class="invalid-feedback d-block">{{ msg }}</div>
+      }
     </div>
 
     <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || submitting()">

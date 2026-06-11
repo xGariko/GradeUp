@@ -1,4 +1,7 @@
 {
+  "name": "@gradeup/shared",
+  "version": "1.0.0",
+  "private": true,
   "dependencies": {
     "zod": "^4.4.1"
   }

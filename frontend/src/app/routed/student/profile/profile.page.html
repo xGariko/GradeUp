@@ -28,21 +28,27 @@
             <input type="text" id="name" class="form-control" [class.is-invalid]="!!profileFieldError('name')"
                    formControlName="name" placeholder="Nome" autocomplete="given-name">
             <label for="name">Nome</label>
-            @if (profileFieldError('name'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (profileFieldError('name'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="form-floating mb-3">
             <input type="text" id="surname" class="form-control" [class.is-invalid]="!!profileFieldError('surname')"
                    formControlName="surname" placeholder="Cognome" autocomplete="family-name">
             <label for="surname">Cognome</label>
-            @if (profileFieldError('surname'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (profileFieldError('surname'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="form-floating mb-3">
             <input type="tel" id="mobile" class="form-control" [class.is-invalid]="!!profileFieldError('mobile')"
                    formControlName="mobile" placeholder="Telefono" autocomplete="tel">
             <label for="mobile">Telefono (opzionale)</label>
-            @if (profileFieldError('mobile'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (profileFieldError('mobile'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="form-floating mb-1">
@@ -53,7 +59,9 @@
 
           <button type="submit" class="btn btn-primary"
                   [disabled]="profileForm.invalid || profileForm.pristine || savingProfile() || readOnly()">
-            @if (savingProfile()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+            @if (savingProfile()) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
             Salva
           </button>
         </form>
@@ -70,7 +78,7 @@
         @if (careerLoading()) {
           <p class="text-body-secondary small mb-0">Caricamento...</p>
         } @else if (careerError(); as err) {
-          <app-error-state [message]="err" (retry)="loadCareer()" />
+          <app-error-state [message]="err" (retry)="loadCareer()"/>
         } @else if (career(); as c) {
           <dl class="row mb-0">
             <dt class="col-5 text-uppercase small text-body-secondary">Stato</dt>
@@ -82,7 +90,9 @@
             }
             @if (c.degreeTitle) {
               <dt class="col-5 text-uppercase small text-body-secondary">Corso di laurea</dt>
-              <dd class="col-7">{{ c.degreeTitle }}@if (c.degreeType) { <span class="d-block small text-body-secondary">{{ c.degreeType }}</span> }</dd>
+              <dd class="col-7">{{ c.degreeTitle }}@if (c.degreeType) {
+                <span class="d-block small text-body-secondary">{{ c.degreeType }}</span>
+              }</dd>
             }
             @if (c.academicYear) {
               <dt class="col-5 text-uppercase small text-body-secondary">Anno accademico</dt>
@@ -90,7 +100,8 @@
             }
           </dl>
           @if (c.status === 'not_matriculated') {
-            <p class="small text-body-secondary mt-2 mb-0">Non risulti immatricolato. I dati di carriera compaiono dopo l'immatricolazione.</p>
+            <p class="small text-body-secondary mt-2 mb-0">Non risulti immatricolato. I dati di carriera compaiono dopo
+              l'immatricolazione.</p>
           }
           <p class="small text-body-secondary mt-3 mb-0">
             <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
@@ -119,10 +130,13 @@
               <label for="currentPassword">Password attuale</label>
             </div>
             <button type="button" class="btn btn-outline-secondary" (click)="showCurrent.set(!showCurrent())"
-                    [attr.aria-label]="showCurrent() ? 'Nascondi password' : 'Mostra password'" [attr.aria-pressed]="showCurrent()">
+                    [attr.aria-label]="showCurrent() ? 'Nascondi password' : 'Mostra password'"
+                    [attr.aria-pressed]="showCurrent()">
               <i class="bi" [class.bi-eye]="!showCurrent()" [class.bi-eye-slash]="showCurrent()" aria-hidden="true"></i>
             </button>
-            @if (passwordFieldError('currentPassword'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (passwordFieldError('currentPassword'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="input-group mb-3">
@@ -133,10 +147,13 @@
               <label for="newPassword">Nuova password</label>
             </div>
             <button type="button" class="btn btn-outline-secondary" (click)="showNew.set(!showNew())"
-                    [attr.aria-label]="showNew() ? 'Nascondi password' : 'Mostra password'" [attr.aria-pressed]="showNew()">
+                    [attr.aria-label]="showNew() ? 'Nascondi password' : 'Mostra password'"
+                    [attr.aria-pressed]="showNew()">
               <i class="bi" [class.bi-eye]="!showNew()" [class.bi-eye-slash]="showNew()" aria-hidden="true"></i>
             </button>
-            @if (passwordFieldError('newPassword'); as msg) { <div class="invalid-feedback d-block">{{ msg }}</div> }
+            @if (passwordFieldError('newPassword'); as msg) {
+              <div class="invalid-feedback d-block">{{ msg }}</div>
+            }
           </div>
 
           <div class="form-floating mb-3">
@@ -144,11 +161,15 @@
                    [class.is-invalid]="showConfirmMismatch()"
                    formControlName="confirmPassword" placeholder="Conferma nuova password" autocomplete="new-password">
             <label for="confirmPassword">Conferma nuova password</label>
-            @if (showConfirmMismatch()) { <div class="invalid-feedback d-block">Le password non coincidono.</div> }
+            @if (showConfirmMismatch()) {
+              <div class="invalid-feedback d-block">Le password non coincidono.</div>
+            }
           </div>
 
           <button type="submit" class="btn btn-primary" [disabled]="savingPassword()">
-            @if (savingPassword()) { <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> }
+            @if (savingPassword()) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
             Cambia password
           </button>
         </form>

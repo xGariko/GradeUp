@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { CAREER_ENDPOINTS } from '$core/api/api.constants';
 import { MatriculationStatus } from '$core/services/study-plan.service';
 
 export interface TranscriptItem {
@@ -34,6 +34,6 @@ export class TranscriptService {
     private readonly http = inject(HttpClient);
 
     get(): Observable<Transcript> {
-        return this.http.get<Transcript>(ME_ENDPOINTS.transcript);
+        return this.http.get<Transcript>(CAREER_ENDPOINTS.transcript);
     }
 }

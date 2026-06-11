@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ME_ENDPOINTS } from '$core/api/api.constants';
+import { CAREER_ENDPOINTS } from '$core/api/api.constants';
 
 export type StudyPlanStatus = 'passed' | 'in_progress' | 'todo';
 export type MatriculationStatus = 'pending' | 'active' | 'suspended' | 'withdrawn' | 'graduated';
@@ -30,6 +30,6 @@ export class StudyPlanService {
     private readonly http = inject(HttpClient);
 
     get(): Observable<StudyPlan> {
-        return this.http.get<StudyPlan>(ME_ENDPOINTS.studyPlan);
+        return this.http.get<StudyPlan>(CAREER_ENDPOINTS.studyPlan);
     }
 }

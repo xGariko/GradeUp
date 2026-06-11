@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { COURSE_ENDPOINTS, ME_ENDPOINTS } from '$core/api/api.constants';
+import { COURSE_ENDPOINTS, ENROLLMENT_ENDPOINTS } from '$core/api/api.constants';
 
 export type MatriculationStatus = 'pending' | 'active' | 'suspended' | 'withdrawn' | 'graduated';
 export type ExamStatus = 'scheduled' | 'passed' | 'failed' | 'absent' | 'withdrawn';
@@ -63,14 +63,14 @@ export class CourseDetailService {
     }
 
     register(idCourse: number): Observable<{ ok: boolean }> {
-        return this.http.post<{ ok: boolean }>(ME_ENDPOINTS.registrations, { id_course: idCourse });
+        return this.http.post<{ ok: boolean }>(ENROLLMENT_ENDPOINTS.registrations, { id_course: idCourse });
     }
 
     unregister(idCourse: number): Observable<{ ok: boolean }> {
-        return this.http.delete<{ ok: boolean }>(ME_ENDPOINTS.registration(idCourse));
+        return this.http.delete<{ ok: boolean }>(ENROLLMENT_ENDPOINTS.registration(idCourse));
     }
 
     enroll(idExam: number): Observable<{ ok: boolean }> {
-        return this.http.post<{ ok: boolean }>(ME_ENDPOINTS.enrollments, { id_exam: idExam });
+        return this.http.post<{ ok: boolean }>(ENROLLMENT_ENDPOINTS.enrollments, { id_exam: idExam });
     }
 }

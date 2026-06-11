@@ -5,12 +5,12 @@
 @if (exams().loading) {
   <p class="text-body-secondary small mb-0">Caricamento...</p>
 } @else if (exams().error; as err) {
-  <app-error-state [message]="err" (retry)="load()" />
+  <app-error-state [message]="err" (retry)="load()"/>
 } @else if (exams().data; as list) {
   @if (!list.length) {
     <app-empty-state
       icon="check2-circle"
-      message="Nessun esame da verbalizzare. Sei in pari." />
+      message="Nessun esame da verbalizzare. Sei in pari."/>
   } @else {
 
     <p class="text-body-secondary small mb-2">
