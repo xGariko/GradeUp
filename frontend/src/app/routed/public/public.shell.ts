@@ -6,7 +6,6 @@ import { IonContent } from '@ionic/angular/standalone';
     selector: 'app-public-shell',
     imports: [IonContent, RouterOutlet],
     templateUrl: './public.shell.html',
-    styleUrl: './public.shell.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublicShell {}
